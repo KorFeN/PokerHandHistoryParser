@@ -47,13 +47,15 @@ namespace HandHistories.Parser.WindowsTestApp
 
             try
             {
-                var hands = handParser.SplitUpMultipleHands(richTextBoxHandText.Text).ToList();
+                int parsedHands = 0;
+                var hands = handParser.SplitUpMultipleHands(richTextBoxHandText.Text);
                 foreach (var hand in hands)
                 {
-                    var parsedHand = handParser.ParseFullHandHistory(hand, true);    
+                    var parsedHand = handParser.ParseFullHandHistory(hand, true);
+                    parsedHands++;
                 }
                 
-                MessageBox.Show(this, "Parsed " + hands.Count + " hands.");
+                MessageBox.Show(this, "Parsed " + parsedHands + " hands.");
             }
             catch (Exception ex)
             {

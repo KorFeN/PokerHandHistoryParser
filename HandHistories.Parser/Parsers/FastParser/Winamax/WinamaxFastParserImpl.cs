@@ -463,7 +463,7 @@ namespace HandHistories.Parser.Parsers.FastParser.Winamax
             return handActions;
         }
 
-        protected override PlayerList ParsePlayers(string[] handLines)
+        protected override PlayerList ParsePlayers(string[] handLines, bool parseSitOut = true, bool parseHoleCards = true)
         {
             // line 3 onward has all seated player
             // Seat 1: ovechkin08 (2000€)
@@ -494,7 +494,6 @@ namespace HandHistories.Parser.Parsers.FastParser.Winamax
                 // Seat 4: KryptonII (button) showed [Qd Ah] and won 42.32€ with One pair : Aces
                 // Seat 1: Hitchhiker won 0.90€
                 // Seat 3: le parano (big blind) mucked
-
 
                 string handLine = handLines[i];
 

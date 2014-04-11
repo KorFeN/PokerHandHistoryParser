@@ -455,7 +455,7 @@ namespace HandHistories.Parser.Parsers.FastParser.Merge
             return new HandAction(playerName, actionType, value, currentStreet, actionNumber);
         }
 
-        protected override PlayerList ParsePlayers(string[] handLines)
+        protected override PlayerList ParsePlayers(string[] handLines, bool parseSitOut = true, bool parseHoleCards = true)
         {
             XDocument document = GetXDocumentFromLines(handLines);
 

@@ -377,7 +377,7 @@ namespace HandHistories.Parser.Parsers.FastParser.Winning
             throw new ArgumentOutOfRangeException("handlines");
         }
 
-        protected override PlayerList ParsePlayers(string[] handLines)
+        protected override PlayerList ParsePlayers(string[] handLines, bool parseSitOut = true, bool parseHoleCards = true)
         {
             //Expected Start 
             //Game started at: 2014/2/28 15:59:51

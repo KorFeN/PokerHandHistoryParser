@@ -257,7 +257,7 @@ namespace HandHistories.Parser.Parsers.FastParser.FullTiltPoker
             return new List<HandAction>();
         }
 
-        protected override PlayerList ParsePlayers(string[] handLines)
+        protected override PlayerList ParsePlayers(string[] handLines, bool parseSitOut = true, bool parseHoleCards = true)
         {
             PlayerList playerList = new PlayerList();
 

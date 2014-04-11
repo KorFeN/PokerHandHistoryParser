@@ -755,7 +755,7 @@ namespace HandHistories.Parser.Parsers.FastParser.PokerStars
             throw new HandActionException(string.Empty, "GetFirstActionIndex: Couldn't find it.");
         }
 
-        protected override PlayerList ParsePlayers(string[] handLines)
+        protected override PlayerList ParsePlayers(string[] handLines, bool parseSitOut = true, bool parseHoleCards = true)
         {
             PlayerList playerList = new PlayerList();
 

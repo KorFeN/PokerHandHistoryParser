@@ -415,7 +415,7 @@ namespace HandHistories.Parser.Parsers.FastParser.OnGame
             return handActions;
         }
 
-        protected override PlayerList ParsePlayers(string[] handLines)
+        protected override PlayerList ParsePlayers(string[] handLines, bool parseSitOut = true, bool parseHoleCards = true)
         {
             // Line 5 onward is:
             //  Players in round: 3

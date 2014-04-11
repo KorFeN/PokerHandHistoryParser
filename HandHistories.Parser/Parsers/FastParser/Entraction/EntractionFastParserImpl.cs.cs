@@ -295,7 +295,7 @@ namespace HandHistories.Parser.Parsers.FastParser.Entraction
             return handActions;
         }
 
-        protected override PlayerList ParsePlayers(string[] handLines)
+        protected override PlayerList ParsePlayers(string[] handLines, bool parseSitOut = true, bool parseHoleCards = true)
         {
             PlayerList playerList = new PlayerList();
             for (int i = 2; i <= handLines.Length - 1; i++)

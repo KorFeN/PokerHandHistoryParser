@@ -421,7 +421,7 @@ namespace HandHistories.Parser.Parsers.FastParser.BossMedia
             throw new ArgumentOutOfRangeException("Did not find start of hand actions");
         }
 
-        protected override PlayerList ParsePlayers(string[] handLines)
+        protected override PlayerList ParsePlayers(string[] handLines, bool parseSitOut = true, bool parseHoleCards = true)
         {
             int currentLine = 1;
             PlayerList plist = new PlayerList();

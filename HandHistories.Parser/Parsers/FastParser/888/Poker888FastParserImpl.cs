@@ -352,7 +352,7 @@ namespace HandHistories.Parser.Parsers.FastParser._888
             return handActions;
         }
 
-        protected override PlayerList ParsePlayers(string[] handLines)
+        protected override PlayerList ParsePlayers(string[] handLines, bool parseSitOut = true, bool parseHoleCards = true)
         {
             int seatCount = Int32.Parse(NumPlayersRegex.Match(handLines[5]).Value);
 

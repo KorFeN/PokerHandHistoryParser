@@ -385,7 +385,7 @@ namespace HandHistories.Parser.Parsers.FastParser.Base
         /// </summary>
         protected List<HandAction> IdentifyAllInActions(string[] handLines, List<HandAction> handActions)
         {
-            PlayerList playerList = ParsePlayers(handLines);
+            PlayerList playerList = ParsePlayers(handLines, false, false);
 
             Dictionary<string, decimal> playerStackRemaining = new Dictionary<string, decimal>();
 
@@ -516,7 +516,7 @@ namespace HandHistories.Parser.Parsers.FastParser.Base
             } 
         }
 
-        protected abstract PlayerList ParsePlayers(string[] handLines);
+        protected abstract PlayerList ParsePlayers(string[] handLines, bool parseSitOut = true, bool parseHoleCards = true);
 
         public BoardCards ParseCommunityCards(string handText)
         {

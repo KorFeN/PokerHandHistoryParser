@@ -585,7 +585,7 @@ namespace HandHistories.Parser.Parsers.FastParser.MicroGaming
             return actionType;
         }
 
-        protected override PlayerList ParsePlayers(string[] handLines)
+        protected override PlayerList ParsePlayers(string[] handLines, bool parseSitOut = true, bool parseHoleCards = true)
         {
             var playerList = new PlayerList();
 

@@ -12,11 +12,15 @@ using HandHistories.Objects.GameDescription;
 using HandHistories.Objects.Players;
 using HandHistories.Parser.Parsers.Exceptions;
 using HandHistories.Parser.Parsers.FastParser.Base;
+using HandHistories.Parser.Utils.FastParsing;
 
 namespace HandHistories.Parser.Parsers.FastParser.IPoker
 {
     public class IPokerFastParserImpl : HandHistoryParserFastImpl
     {
+        const int playerStartIndex = 7;//"<player".Length
+        const int actionStartIndex = 7;//"<action".Length
+
         private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
         private readonly bool _isIpoker2;
@@ -51,34 +55,72 @@ namespace HandHistories.Parser.Parsers.FastParser.IPoker
 
         protected override string[] SplitHandsLines(string handText)
         {
+            string[] lines = handText.Split(new char[]{'<'}, StringSplitOptions.RemoveEmptyEntries);
+            List<string> newLines = new List<string>(lines.Length);
+            for (int i = 0; i < lines.Length - 1; i++)
+            {
+                string CurrentLine = lines[i].Trim();
+                if (CurrentLine[0] != '/')
+                {
+                    if (CurrentLine[0] == '?')
+                    {
+                        continue;
+                    }
+
+                    if (lines[i + 1][0] == '/')
+                    {
+                        if (CurrentLine[CurrentLine.Length - 1] == '>' &&
+                            CurrentLine[CurrentLine.Length - 2] == '/')
+                        {
+                            newLines.Add('<' + CurrentLine);
+                        }
+                        else
+                        {
+                            newLines.Add('<' + CurrentLine + '<' + lines[i + 1].Trim());
+                            i++;
+                        }
+                    }
+                    else
+                    {
+                        newLines.Add('<' + CurrentLine);
+                    }
+                }
+                else
+                {
+                    newLines.Add('<' + CurrentLine);
+                }
+            }
+            newLines.Add('<' + lines[lines.Length - 1]);
+            return newLines.ToArray();
+
             XDocument handDocument = XDocument.Parse(handText);
             return base.SplitHandsLines(handDocument.ToString());
         }
 
-        protected XDocument GetXDocumentFromLines(string[] handLines)
-        {
-            string handString = string.Join("", handLines);
+        //protected XDocument GetXDocumentFromLines(string[] handLines)
+        //{
+        //    string handString = string.Join("", handLines);
 
-            XmlReaderSettings xrs = new XmlReaderSettings();
-            xrs.ConformanceLevel = ConformanceLevel.Fragment;
+        //    XmlReaderSettings xrs = new XmlReaderSettings();
+        //    xrs.ConformanceLevel = ConformanceLevel.Fragment;
 
-            XDocument doc = new XDocument(new XElement("root"));
-            XElement root = doc.Descendants().First();
+        //    XDocument doc = new XDocument(new XElement("root"));
+        //    XElement root = doc.Descendants().First();
 
-            using (StringReader fs = new StringReader(handString))
-            using (XmlReader xr = XmlReader.Create(fs, xrs))
-            {
-                while (xr.Read())
-                {
-                    if (xr.NodeType == XmlNodeType.Element)
-                    {
-                        root.Add(XElement.Load(xr.ReadSubtree()));
-                    }
-                }
-            }
+        //    using (StringReader fs = new StringReader(handString))
+        //    using (XmlReader xr = XmlReader.Create(fs, xrs))
+        //    {
+        //        while (xr.Read())
+        //        {
+        //            if (xr.NodeType == XmlNodeType.Element)
+        //            {
+        //                root.Add(XElement.Load(xr.ReadSubtree()));
+        //            }
+        //        }
+        //    }
 
-            return doc;
-        }
+        //    return doc;
+        //}
 
         /*
             <player seat="3" name="RodriDiaz3" chips="$2.25" dealer="0" win="$0" bet="$0.08" rebuy="0" addon="0" />
@@ -87,43 +129,80 @@ namespace HandHistories.Parser.Parsers.FastParser.IPoker
 
         protected int GetSeatNumberFromPlayerLine(string playerLine)
         {
-            int seatOffset = playerLine.IndexOf(" s") + 7;
-            int seatEndOffset = playerLine.IndexOf('"', seatOffset);
-            string seatNumberString = playerLine.Substring(seatOffset, seatEndOffset - seatOffset);
-            return Int32.Parse(seatNumberString);            
+            string seatNumberString = GetPlayerLineAttributeValue(playerLine, "seat");
+            return FastInt.Parse(seatNumberString);            
         }
 
         protected bool IsPlayerLineDealer(string playerLine)
         {
-            int dealerOffset = playerLine.IndexOf(" d");
-            int dealerValue = Int32.Parse(" " + playerLine[dealerOffset + 9]);
+            int dealerValue = FastInt.Parse(GetPlayerLineAttributeValue(playerLine, "dealer"));
             return dealerValue == 1;
         }
 
         protected decimal GetStackFromPlayerLine(string playerLine)
         {
-            int stackStartPos = playerLine.IndexOf(" c") + 9;
-            int stackEndPos = playerLine.IndexOf('"', stackStartPos) - 1;
-            string stackString = playerLine.Substring(stackStartPos, stackEndPos - stackStartPos + 1);
+            string stackString = GetPlayerLineAttributeValue(playerLine, "chips");
+            if (stackString[0] == '€' || stackString[0] == '£' || stackString[0] == '$')
+	        {
+		        stackString = stackString.Substring(1);
+            }
             return decimal.Parse(stackString, System.Globalization.CultureInfo.InvariantCulture);
         }
 
         protected decimal GetWinningsFromPlayerLine(string playerLine)
         {
-            int stackStartPos = playerLine.IndexOf(" w") + 7;
-            int stackEndPos = playerLine.IndexOf('"', stackStartPos) - 1;
-            string stackString = playerLine.Substring(stackStartPos, stackEndPos - stackStartPos + 1);
+            string stackString = GetPlayerLineAttributeValue(playerLine, "win")
+                .Replace("€", "").Replace("$", "").Replace("£", "");
             return decimal.Parse(stackString, System.Globalization.CultureInfo.InvariantCulture);
         }
 
         protected string GetNameFromPlayerLine(string playerLine)
         {
-            int nameStartPos = playerLine.IndexOf(" n") + 7;
-            int nameEndPos = playerLine.IndexOf('"', nameStartPos) - 1;
-            string name = playerLine.Substring(nameStartPos, nameEndPos - nameStartPos + 1);
+            string name = GetPlayerLineAttributeValue(playerLine, "name");
             return name;
         }
 
+        protected string GetPlayerLineAttributeValue(string actionLine, string attribute)
+        {
+            char firstChar = attribute[0];
+            for (int i = actionStartIndex; i < actionLine.Length; i++)
+            {
+                if (actionLine[i] == ' ')
+                {
+                    char attributeChar = actionLine[i + 1];
+                    if (firstChar == attributeChar)
+                    {
+                        int startIndex = i + 1 + attribute.Length + 2;//+1 is the offset from ' ' and +2 is the length of "=\"".
+                        int endIndex = actionLine.IndexOf('\"', startIndex + 1);
+                        return actionLine.Substring(startIndex, endIndex - startIndex);
+                    }
+                    else
+                    {
+                        switch (attributeChar)
+                        {
+                            case 'b'://bet=""
+                            case 'w'://win=""
+                                i += 6;
+                                break;
+                            case 'n'://name=""
+                            case 's'://seat=""
+                                i += 7;
+                                break;
+                            case 'a'://addon=""
+                            case 'r'://rebuy="" and reg_code="" 
+                                     //we choose the shortest because the loop will find the space eventually
+                            case 'c'://chips=""
+                                i += 8;
+                                break;
+                            case 'd'://dealer=""
+                                i += 9;
+                                break;
+                        }
+                    }
+                }
+            }
+            throw new ArgumentException("Atrribute not found: " + attribute);
+        }
 
         protected override int ParseDealerPosition(string[] handLines)
         {
@@ -165,8 +244,14 @@ namespace HandHistories.Parser.Parsers.FastParser.IPoker
             //Two Cases - Case 1, we have a single <session> tag holding multiple <game> tags
             //            Case 2, we have multiple <session> tags each holding a single <game> tag.
             //            We need our enumerable to have only case 2 representations for parsing
+            //
+            //Performance improvements: we search for a second <game> tag and then search for 
+            //an other <session> in reverse
+            int sessionIndex = rawHandHistories.IndexOf("<session");
+            int game1Index = rawHandHistories.IndexOf("<game");
+            int game2Index = rawHandHistories.IndexOf("<game", game1Index + 1);
 
-            if (rawHandHistories.IndexOf("<session") == rawHandHistories.LastIndexOf("<session"))
+            if (rawHandHistories.LastIndexOf("<session", game2Index) == sessionIndex)
             {
                 //We are case 1 - convert to case 2
 
@@ -180,12 +265,25 @@ namespace HandHistories.Parser.Parsers.FastParser.IPoker
 
                 string generalInfoString = rawHandHistories.Substring(0, endOfGeneralInfoIndex + 10);
 
-                MatchCollection gameMatches = GameGroupRegex.Matches(rawHandHistories, endOfGeneralInfoIndex + 9);
-                foreach (Match gameMatch in gameMatches)
+                int startIndex = rawHandHistories.IndexOf("<game ", endOfGeneralInfoIndex + 9);
+                while (startIndex != -1)
                 {
-                    string fullGameString = generalInfoString + "\r\n" + gameMatch.Value + "\r\n</session>";
-                    yield return fullGameString;
+                    int endIndex = FastHandSplitEndIndex(rawHandHistories, startIndex);
+                    if (endIndex == -1)
+                    {
+                        throw new ArgumentException("Did not find end of <game>");
+                    }
+                    string handText = rawHandHistories.Substring(startIndex, endIndex - startIndex);
+                    yield return generalInfoString + "\r\n" + handText + "\r\n</session>";
+                    startIndex = rawHandHistories.IndexOf("<game ", endIndex);
                 }
+
+                //MatchCollection gameMatches = GameGroupRegex.Matches(rawHandHistories, endOfGeneralInfoIndex + 9);
+                //foreach (Match gameMatch in gameMatches)
+                //{
+                //    string fullGameString = generalInfoString + "\r\n" + gameMatch.Value + "\r\n</session>";
+                //    yield return fullGameString;
+                //}
             }
             else
             {
@@ -199,16 +297,58 @@ namespace HandHistories.Parser.Parsers.FastParser.IPoker
             }
         }
 
+        private int FastHandSplitEndIndex(string rawHandHistories, int startIndex)
+        {
+            for (int i = startIndex; i < rawHandHistories.Length; i++)
+            {
+                if (rawHandHistories[i] == '<')
+                {
+                    char currentChar = rawHandHistories[i + 1];
+                    switch (currentChar)
+                    {
+                        case 'p'://"<players>" and "<player "
+                            if (rawHandHistories[i + 7] == ' ')
+                            {
+                                i += 89; //"<player seat="" name="" chips="" dealer="" win="" bet="" rebuy="" addon="" reg_code="" />".Length
+                            }
+                            else
+                            {
+                                i += 9;//"<players>".Length
+                            }
+                            break;
+                        case 'a':
+                            i += 58;//"<action no="" player="" type="" sum="" cards="" />".Length
+                            break;
+                        case 'r':
+                            i += 13;//"<round no="">".Length
+                            break;
+                        case '/':
+                            if (rawHandHistories.Substring(i + 2, 5) == "game>")
+                            {
+                                return i + 7;
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+
+            return rawHandHistories.IndexOf("/game>", startIndex) + 5;
+        }
+
         // For now (4/17/2012) only need Game # in Miner and using Regexes. Will convert to faster mechanism soon.
         private static readonly Regex HandIdRegex = new Regex("(?<=gamecode=\")\\d+", RegexOptions.Compiled);
         protected override long ParseHandId(string[] handLines)
         {
             foreach (var handLine in handLines)
             {
-                var match = HandIdRegex.Match(handLine);
-                if (match.Success)
+                if (handLine[1] == 'g' && handLine.StartsWith("<game gamecode=\""))
                 {
-                    return long.Parse(match.Value.Replace("-", ""));
+                    const int StartIndex = 16;//"<game gamecode=\".Length
+                    int endIndex = handLine.IndexOf('\"', StartIndex);
+                    string idString = handLine.Substring(StartIndex, endIndex - StartIndex);
+                    return long.Parse(idString);
                 }
             }
 
@@ -266,7 +406,7 @@ namespace HandHistories.Parser.Parsers.FastParser.IPoker
             
             for(int i=0; i<= handLines.Count(); i++)
             {
-                if(handLines[i].Contains("gamecode=\""))
+                if(handLines[i][1] == 'g' && handLines[i].Contains("gamecode=\""))
                 {
                     return handLines[i + 2];
                 }
@@ -291,7 +431,7 @@ namespace HandHistories.Parser.Parsers.FastParser.IPoker
             List<string> playerLines = new List<string>();
 
             string line = handLines[offset];
-            line = line.TrimStart();
+            //line = line.TrimStart();
             while (offset < handLines.Count() && line[1] != '/')
             {
                 playerLines.Add(line);
@@ -301,7 +441,7 @@ namespace HandHistories.Parser.Parsers.FastParser.IPoker
                     break;
 
                 line = handLines[offset];
-                line = line.TrimStart();
+                //line = line.TrimStart();
             }
 
             return playerLines.ToArray();
@@ -313,7 +453,7 @@ namespace HandHistories.Parser.Parsers.FastParser.IPoker
             for (int i = 0; i < handLines.Length; i++)
             {
                 string handLine = handLines[i];
-                handLine = handLine.TrimStart();
+               // handLine = handLine.TrimStart();
 
                 //If we don't have these letters at these positions, we're not a hand line
                 if (handLine[1] != 'c' || handLine[7] != 't')
@@ -466,7 +606,7 @@ namespace HandHistories.Parser.Parsers.FastParser.IPoker
 
             for (int i = startRow; i < handLines.Length - 2; i++)
             {
-                string handLine = handLines[i].TrimStart();
+                string handLine = handLines[i];//.TrimStart();
 
                 //If we are starting a new round, update the current street 
                 if (handLine[1] == 'r')
@@ -509,7 +649,7 @@ namespace HandHistories.Parser.Parsers.FastParser.IPoker
         {
             int actionNumber = Int32.MaxValue - 100;
 
-            PlayerList playerList = ParsePlayers(handLines);
+            PlayerList playerList = ParsePlayers(handLines, false, true);
 
             List<HandAction> winningAndShowCardActions = new List<HandAction>();
 
@@ -593,37 +733,73 @@ namespace HandHistories.Parser.Parsers.FastParser.IPoker
 
         protected int GetActionNumberFromActionLine(string actionLine)
         {
-            int actionStartPos = actionLine.IndexOf(" n") + 5;
-            int actionEndPos = actionLine.IndexOf('"', actionStartPos) - 1;
-            string actionNumString = actionLine.Substring(actionStartPos, actionEndPos - actionStartPos + 1);
+            string actionNumString = GetActionAttributeValue(actionLine, "no");
             return Int32.Parse(actionNumString);
         }
 
         protected string GetPlayerFromActionLine(string actionLine)
         {
-            int nameStartPos = actionLine.IndexOf(" p") + 9;
-            int nameEndPos = actionLine.IndexOf('"', nameStartPos) - 1;
-            string name = actionLine.Substring(nameStartPos, nameEndPos - nameStartPos + 1);
+            string name = GetActionAttributeValue(actionLine, "player");
             return name;
         }
 
         protected decimal GetValueFromActionLine(string actionLine)
         {
-            int startPos = actionLine.IndexOf(" s") + 7;
-            int endPos = actionLine.IndexOf('"', startPos) - 1;
-            string value = actionLine.Substring(startPos, endPos - startPos + 1);
+            string value = GetActionAttributeValue(actionLine, "sum");
+            if (value[0] == '$' || value[0] == '€' || value[0] == '£')
+            {
+                value = value.Substring(1);
+            }
             return decimal.Parse(value, System.Globalization.CultureInfo.InvariantCulture);
         }
 
         protected int GetActionTypeFromActionLine(string actionLine)
         {
-            int actionStartPos = actionLine.IndexOf(" t") + 7;
-            int actionEndPos = actionLine.IndexOf('"', actionStartPos) - 1;
-            string actionNumString = actionLine.Substring(actionStartPos, actionEndPos - actionStartPos + 1);
-            return Int32.Parse(actionNumString);
+            string actionNumString = GetActionAttributeValue(actionLine, "type");
+            return FastInt.Parse(actionNumString);
         }
 
-        protected override PlayerList ParsePlayers(string[] handLines)
+        protected string GetActionAttributeValue(string actionLine, string attribute)
+        {
+            char firstChar = attribute[0];
+            for (int i = actionStartIndex; i < actionLine.Length; i++)
+            {
+                if (actionLine[i] == ' ')
+                {
+                    char attributeChar = actionLine[i + 1];
+                    if (firstChar == attributeChar)
+                    {
+                        int startIndex = i + 1 + attribute.Length + 2;//+1 is the offset from ' ' and +2 is the length of "=\"".
+                        int endIndex = actionLine.IndexOf('\"', startIndex + 1);
+                        return actionLine.Substring(startIndex, endIndex - startIndex);
+                    }
+                    else
+                    {
+                        switch (attributeChar)
+                        {
+                            case 'n'://no=""
+                                i += 5;
+                                break;
+                            case 'p'://player=""
+                                i += 9;
+                                break;
+                            case 't'://type=""
+                                i += 7;
+                                break;
+                            case 's'://sum=""
+                                i += 6;
+                                break;
+                            case 'c'://cards=""
+                                i += 8;
+                                break;
+                        }
+                    }
+                }
+            }
+            throw new ArgumentException("Atrribute not found: " + attribute);
+        }
+
+        protected override PlayerList ParsePlayers(string[] handLines, bool ScanSitOutStatus, bool ScanHoleCards)
         {
             /*
                 <player seat="3" name="RodriDiaz3" chips="$2.25" dealer="0" win="$0" bet="$0.08" rebuy="0" addon="0" />
@@ -645,81 +821,104 @@ namespace HandHistories.Parser.Parsers.FastParser.IPoker
                                    });
             }
 
-            XDocument xDocument = GetXDocumentFromLines(handLines);
-            List<XElement> actionElements =
-                xDocument.Element("root").Element("session").Element("game").Elements("round").Elements("action").
-                    ToList();
-            foreach (Player player in playerList)
+            if (ScanSitOutStatus)
             {
-                List<XElement> playerActions = actionElements.Where(action => action.Attribute("player").Value.Equals(player.PlayerName)).ToList();
+                List<HandAction> actions = new List<HandAction>();
+                const int offset = 23;
+                int startRow = offset + playerLines.Length + 2;
 
-                if (playerActions.Count == 0)
+                for (int i = startRow; i < handLines.Length - 2; i++)
                 {
-                    //Players are marked as sitting out by default, we don't need to update
-                    continue;
+                    string handLine = handLines[i];//.TrimStart();
+
+                    if (handLine[1] == 'a')
+                    {
+                        HandAction action = GetHandActionFromActionLine(handLine, Street.Null);
+                        actions.Add(action);
+                    }
+                    else if (handLine[1] == 'r')
+                    {
+                        bool preFlop = true;
+                        int roundNumber = GetRoundNumberFromLine(handLine);
+                        switch (roundNumber)
+                        {
+                            case 2:
+                            case 3:
+                            case 4:
+                                preFlop = false;
+                                break;
+                        }
+                        if (!preFlop)
+                        {
+                            break;
+                        }
+                    }
                 }
 
-                //Sometimes the first and only action for a player is to sit out - we should still treat them as sitting out
-                bool playerSitsOutAsAction = playerActions[0].Attribute("type").Value == "8";
-                if (playerSitsOutAsAction)
+                foreach (var player in playerList)
                 {
-                    continue;
+                    HandAction firstAction = actions.FirstOrDefault(p => p.PlayerName == player.PlayerName);
+                    if (firstAction != null && firstAction.HandActionType != HandActionType.SITTING_OUT)
+                    {
+                        player.IsSittingOut = false;
+                    }
                 }
-
-                player.IsSittingOut = false;
             }
 
             /* 
              * Grab known hole cards for players and add them to the player
              * <cards type="Pocket" player="pepealas5">CA CK</cards>
              */
-
-            string[] cardLines = GetCardLinesFromHandLines(handLines);
-
-            for (int i = 0; i < cardLines.Length; i++)
+            if (ScanHoleCards)
             {
-                string handLine = cardLines[i];
-                handLine = handLine.TrimStart();
+                string[] cardLines = GetCardLinesFromHandLines(handLines);
 
-                //To make sure we know the exact character location of each card, turn 10s into Ts (these are recognized by our parser)
-                //Had to change this to specific cases so we didn't accidentally change player names
-                handLine = handLine.Replace("10 ", "T ");
-                handLine = handLine.Replace("10<", "T<");
-
-                //We only care about Pocket Cards
-                if (handLine[13] != 'P')
+                for (int i = 0; i < cardLines.Length; i++)
                 {
-                    continue;
-                }
+                    string handLine = cardLines[i];
+                    //handLine = handLine.TrimStart();
 
-                //When players fold, we see a line: <cards type="Pocket" player="pepealas5">X X</cards>, we should skip these lines
-                if (handLine[handLine.Length - 9] == 'X')
-                {
-                    continue;
-                }
+                    //To make sure we know the exact character location of each card, turn 10s into Ts (these are recognized by our parser)
+                    //Had to change this to specific cases so we didn't accidentally change player names
+                    handLine = handLine.Replace("10 ", "T ");
+                    handLine = handLine.Replace("10<", "T<");
 
-                int playerNameStartIndex = 29;
-                int playerNameEndIndex = handLine.IndexOf('"', playerNameStartIndex) - 1;
-                string playerName = handLine.Substring(playerNameStartIndex,
-                                                       playerNameEndIndex - playerNameStartIndex + 1);
-                Player player = playerList.First(p => p.PlayerName.Equals(playerName));
-
-
-                int playerCardsStartIndex = playerNameEndIndex + 3;
-                int playerCardsEndIndex = handLine.Length - 9;
-                string playerCardString = handLine.Substring(playerCardsStartIndex,
-                                                        playerCardsEndIndex - playerCardsStartIndex + 1);
-                string[] cards = playerCardString.Split(' ');
-                if (cards.Length > 0)
-                {
-                    player.HoleCards = HoleCards.NoHolecards(player.PlayerName);
-                    foreach (string card in cards)
+                    //We only care about Pocket Cards
+                    if (handLine[13] != 'P')
                     {
-                        //Suit and rank are reversed in these strings, so we flip them around before adding
-                        player.HoleCards.AddCard(new Card(card[1], card[0]));
+                        continue;
+                    }
+
+                    //When players fold, we see a line: <cards type="Pocket" player="pepealas5">X X</cards>, we should skip these lines
+                    if (handLine[handLine.Length - 9] == 'X')
+                    {
+                        continue;
+                    }
+
+                    int playerNameStartIndex = 29;
+                    int playerNameEndIndex = handLine.IndexOf('"', playerNameStartIndex) - 1;
+                    string playerName = handLine.Substring(playerNameStartIndex,
+                                                           playerNameEndIndex - playerNameStartIndex + 1);
+                    Player player = playerList.First(p => p.PlayerName.Equals(playerName));
+
+
+                    int playerCardsStartIndex = playerNameEndIndex + 3;
+                    int playerCardsEndIndex = handLine.Length - 9;
+                    string playerCardString = handLine.Substring(playerCardsStartIndex,
+                                                            playerCardsEndIndex - playerCardsStartIndex + 1);
+                    string[] cards = playerCardString.Split(' ');
+                    if (cards.Length > 0)
+                    {
+                        player.HoleCards = HoleCards.NoHolecards(player.PlayerName);
+                        foreach (string card in cards)
+                        {
+                            //Suit and rank are reversed in these strings, so we flip them around before adding
+                            player.HoleCards.AddCard(new Card(card[1], card[0]));
+                        }
                     }
                 }
             }
+            
 
             return playerList;
         }
@@ -739,7 +938,7 @@ namespace HandHistories.Parser.Parsers.FastParser.IPoker
             for (int i = 0; i < cardLines.Length; i++)
             {
                 string handLine = cardLines[i];
-                handLine = handLine.TrimStart();
+                //handLine = handLine.TrimStart();
 
                 //To make sure we know the exact character location of each card, turn 10s into Ts (these are recognized by our parser)
                 handLine = handLine.Replace("10", "T");
