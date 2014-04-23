@@ -85,6 +85,10 @@
       <Project>{0F131DB6-4891-4A24-A529-87F4816B9923}</Project>
       <Name>HandHistories.Parser</Name>
     </ProjectReference>
+    <ProjectReference Include="..\HandHistories.Statistics\HandHistories.Statistics.csproj">
+      <Project>{9248b9b8-5129-4516-b318-2ac7f07ac3a0}</Project>
+      <Name>HandHistories.Statistics</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
