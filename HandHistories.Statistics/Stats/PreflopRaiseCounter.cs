@@ -7,36 +7,27 @@ using System.Text;
 
 namespace HandHistories.Statistics.Stats
 {
-    public class PreflopRaiseCounter : IStatisticCounter
-    {
-        PreflopRaiseCondition condition = new PreflopRaiseCondition();
-
-        public int Count
-        {
-            get;
-            private set;
-        }
-
-        public void EvaluateHand(GeneralHandData generalHand, PlayerHandData hand)
-        {
-            if (condition.EvaluateHand(generalHand, hand))
-            {
-                Count++;
-            }
-        }
-    }
-
     public class PreflopRaiseCondition : IStatisticCondition
     {
-        public bool EvaluateHand(GeneralHandData generalHand, PlayerHandData hand)
+        public void EvaluateHand(GeneralHandData generalHand, PlayerHandData hand)
         {
             HandAction PFRAction = hand.PlayerActions.Street(Street.Preflop)
-                .FirstOrDefault(p => p.IsPreFlopRaise);
+                .FirstOrDefault(p => p.IsRaise);
             if (PFRAction != null)
             {
-                return true;
+                hand.CustomHandData.StoreData(this.GetType(), PFRAction);
+                if (ConditionTrigger != null)
+                {
+                    ConditionTrigger(generalHand, hand);
+                }
             }
-            return false;
+        }
+
+        public event StatisticConditionTrigger ConditionTrigger;
+
+        public IEnumerable<Type> PrequisiteConditions
+        {
+            get { return new Type[] { typeof(PlayerHandCondition) }; }
         }
     }
 }

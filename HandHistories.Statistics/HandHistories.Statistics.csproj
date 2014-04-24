@@ -40,10 +40,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\ConditionTree.cs" />
+    <Compile Include="Core\StatCounter.cs" />
     <Compile Include="HandData\GeneralHandData.cs" />
+    <Compile Include="HandData\CustomHandData.cs" />
+    <Compile Include="HandData\HandData.cs" />
     <Compile Include="HandData\PlayerHandData.cs" />
-    <Compile Include="Interfaces\IHandCondition.cs" />
-    <Compile Include="Interfaces\IHandCounter.cs" />
     <Compile Include="Interfaces\IStatisticCondition.cs" />
     <Compile Include="Interfaces\IStatisticCounter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

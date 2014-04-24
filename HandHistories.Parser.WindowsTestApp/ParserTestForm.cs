@@ -10,6 +10,8 @@ using HandHistories.Objects.GameDescription;
 using HandHistories.Parser.Parsers.Factory;
 using HandHistories.Statistics.Stats;
 using HandHistories.Statistics;
+using HandHistories.Statistics.Core;
+using System.Diagnostics;
 
 namespace HandHistories.Parser.WindowsTestApp
 {
@@ -71,10 +73,22 @@ namespace HandHistories.Parser.WindowsTestApp
                 return;
             }
 
-            PlayerHandCounter handsPlayed = new PlayerHandCounter();
-            VPIPCounter vpipCounter = new VPIPCounter();
-            PreflopRaiseCounter pfrCounter = new PreflopRaiseCounter();
-            var _3BetCounter = new ThreeBetCounter();
+            Stopwatch duration = new Stopwatch();
+            duration.Start();
+
+            var StatTree = new ConditionTree();
+            StatTree.AddCondition(typeof(PlayerHandCondition));
+            StatTree.AddCondition(typeof(VPIPInstanceCondition));
+            StatTree.AddCondition(typeof(PreflopRaiseCondition));
+            StatTree.AddCondition(typeof(ThreeBetInstanceCondition));
+            StatTree.AddCondition(typeof(ThreeBetOppertunityCondition));
+            StatTree.InitializeTree();
+
+            var handsPlayed = new SimpleStatCounter(StatTree.GetHandCondition(typeof(PlayerHandCondition)));
+            var vpipCounter = new SimpleStatCounter(StatTree.GetHandCondition(typeof(VPIPInstanceCondition)));
+            var pfrCounter = new SimpleStatCounter(StatTree.GetHandCondition(typeof(PreflopRaiseCondition)));
+            var _3BetCounterINST = new SimpleStatCounter(StatTree.GetHandCondition(typeof(ThreeBetInstanceCondition)));
+            var _3BetCounterOPP = new SimpleStatCounter(StatTree.GetHandCondition(typeof(ThreeBetOppertunityCondition)));
 
             IHandHistoryParserFactory factory = new HandHistoryParserFactoryImpl();
             var handParser = factory.GetFullHandHistoryParser((SiteName)listBoxSite.SelectedItem);
@@ -86,21 +100,22 @@ namespace HandHistories.Parser.WindowsTestApp
                 {
                     var parsedHand = handParser.ParseFullHandHistory(hand, true);
                     GeneralHandData generalHand = new GeneralHandData(parsedHand);
-                    PlayerHandData compiledHand = new PlayerHandData(parsedHand, textBox_PlayerName.Text);
-                    handsPlayed.EvaluateHand(generalHand, compiledHand);
-                    vpipCounter.EvaluateHand(generalHand, compiledHand);
-                    pfrCounter.EvaluateHand(generalHand, compiledHand);
-                    _3BetCounter.EvaluateHand(generalHand, compiledHand);
+                    PlayerHandData compiledHand = generalHand.PlayerList.ContainsKey(textBox_PlayerName.Text)
+                        ? generalHand.PlayerList[textBox_PlayerName.Text] 
+                        : new PlayerHandData(parsedHand, textBox_PlayerName.Text);
+                    StatTree.EvaluateHand(generalHand, compiledHand);
                 }
 
-                double vpipProc = Math.Round((double)vpipCounter.Count / (double)handsPlayed.Count * 100);
-                double pfrProc = Math.Round((double)pfrCounter.Count / (double)handsPlayed.Count * 100);
-                double threeBetProc = Math.Round((double)_3BetCounter.Count / (double)handsPlayed.Count * 100);
+                double vpipProc = Math.Round((double)vpipCounter.Count / (double)handsPlayed.Count * 100, 1);
+                double pfrProc = Math.Round((double)pfrCounter.Count / (double)handsPlayed.Count * 100, 1);
+                double threeBetProc = Math.Round((double)_3BetCounterINST.Count / (double)_3BetCounterOPP.Count * 100, 1);
                 string StatisticString = string.Format("{0}/{1}/{2}", vpipProc, pfrProc, threeBetProc);
-                MessageBox.Show(this, string.Format("Player {0} played {1} of {2} hands.\r\n{3}", textBox_PlayerName.Text, handsPlayed.Count, hands.Count, StatisticString));
+                duration.Stop();
+                MessageBox.Show(this, string.Format("Player {0} played {1} of {2} hands.\r\n{3}\r\nin {4}ms", new object[]{textBox_PlayerName.Text, handsPlayed.Count, hands.Count, StatisticString, duration.ElapsedMilliseconds}));
             }
             catch (Exception ex)
             {
+                duration.Stop();
                 MessageBox.Show(this, ex.Message + "\r\n" + ex.StackTrace, "Error");
             }
         }

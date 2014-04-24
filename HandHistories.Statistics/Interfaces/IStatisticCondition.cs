@@ -7,8 +7,12 @@ using System.Threading.Tasks;
 
 namespace HandHistories.Statistics
 {
+    public delegate void StatisticConditionTrigger(GeneralHandData generalHand, PlayerHandData hand);
+
     public interface IStatisticCondition
     {
-        bool EvaluateHand(GeneralHandData generalData, PlayerHandData playerHand);
+        event StatisticConditionTrigger ConditionTrigger;
+        void EvaluateHand(GeneralHandData generalData, PlayerHandData playerHand);
+        IEnumerable<Type> PrequisiteConditions { get; }
     }
 }

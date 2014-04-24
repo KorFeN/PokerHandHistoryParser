@@ -8,28 +8,9 @@ using System.Text;
 
 namespace HandHistories.Statistics.Stats
 {
-    public class VPIPCounter
-    {
-        VPIPInstanceCondition condition = new VPIPInstanceCondition();
-
-        public int Count
-        {
-            get;
-            private set;
-        }
-
-        public void EvaluateHand(GeneralHandData generalHand, PlayerHandData hand)
-        {
-            if (condition.EvaluateHand(generalHand, hand))
-            {
-                Count++;
-            }
-        }
-    }
-
     public class VPIPInstanceCondition : IStatisticCondition
     {
-        public bool EvaluateHand(GeneralHandData generalHand, PlayerHandData hand)
+        public void EvaluateHand(GeneralHandData generalHand, PlayerHandData hand)
         {
             HandAction VPIPAction = hand.PlayerActions.Street(Street.Preflop)
                 .FirstOrDefault(p => p.HandActionType == HandActionType.CALL ||
@@ -37,9 +18,18 @@ namespace HandHistories.Statistics.Stats
                 p.HandActionType == HandActionType.ALL_IN);
             if (VPIPAction != null)
             {
-                return true;
+                if (ConditionTrigger != null)
+                {
+                    ConditionTrigger(generalHand, hand);
+                }
             }
-            return false;
+        }
+
+        public event StatisticConditionTrigger ConditionTrigger;
+
+        public IEnumerable<Type> PrequisiteConditions
+        {
+            get { return new Type[]{ typeof(PlayerHandCondition) }; }
         }
     }
 }

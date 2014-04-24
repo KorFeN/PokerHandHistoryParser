@@ -9,6 +9,5 @@ namespace HandHistories.Statistics
     public interface IStatisticCounter
     {
         int Count { get; }
-        void EvaluateHand(GeneralHandData generalHand, PlayerHandData hand);
     }
 }

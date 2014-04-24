@@ -1,5 +1,7 @@
 ﻿using HandHistories.Objects.Actions;
 using HandHistories.Objects.Hand;
+using HandHistories.Objects.Players;
+using HandHistories.Statistics.HandData;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,18 +13,20 @@ namespace HandHistories.Statistics
     /// <summary>
     /// TODO: This class will contain player specific hand information that might be used by multiple conditions
     /// </summary>
-    public class PlayerHandData
+    public class PlayerHandData : BasicHandData
     {
-        public readonly HandHistory handHistory;
         public readonly string playerName;
-        List<HandAction> playerActions;
+        public readonly GeneralHandData handData;
+        readonly Player Player;
 
         public PlayerHandData(HandHistory hand, string PlayerName)
+            : base(hand)
         {
-            handHistory = hand;
             playerName = PlayerName;
+            Player = hand.Players[PlayerName];
         }
 
+        List<HandAction> playerActions;
         public List<HandAction> PlayerActions
         {
             get
