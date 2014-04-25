@@ -1,23 +1,21 @@
 ﻿using HandHistories.Objects.Actions;
 using HandHistories.Objects.Cards;
-using HandHistories.Objects.Players;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace HandHistories.Statistics.Stats
+namespace HandHistories.Statistics.Conditions
 {
-    public class VPIPInstanceCondition : IStatisticCondition
+    public class PreflopRaiseCondition : IStatisticCondition
     {
         public void EvaluateHand(GeneralHandData generalHand, PlayerHandData hand)
         {
-            HandAction VPIPAction = hand.PlayerActions.Street(Street.Preflop)
-                .FirstOrDefault(p => p.HandActionType == HandActionType.CALL ||
-                p.HandActionType == HandActionType.RAISE ||
-                p.HandActionType == HandActionType.ALL_IN);
-            if (VPIPAction != null)
+            HandAction PFRAction = hand.PlayerActions.Street(Street.Preflop)
+                .FirstOrDefault(p => p.IsRaise);
+            if (PFRAction != null)
             {
+                hand.CustomHandData.StoreData(this.GetType(), PFRAction);
                 if (ConditionTrigger != null)
                 {
                     ConditionTrigger(generalHand, hand);
@@ -29,7 +27,7 @@ namespace HandHistories.Statistics.Stats
 
         public IEnumerable<Type> PrequisiteConditions
         {
-            get { return new Type[]{ typeof(PlayerHandCondition) }; }
+            get { return new Type[] { typeof(PlayerHandCondition) }; }
         }
     }
 }

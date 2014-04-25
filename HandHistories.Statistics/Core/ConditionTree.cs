@@ -18,13 +18,24 @@ namespace HandHistories.Statistics.Core
             Ready
         }
 
+        public event Action<ConditionTree> InitializationFinnished;
+
         ConditionTreeState CurrentState = ConditionTreeState.AddConditions;
 
         List<Type> AllConditionTypes = new List<Type>();
 
-        List<IStatisticCondition> AddConditions = new List<IStatisticCondition>();
+        List<IStatisticCondition> AllConditions = new List<IStatisticCondition>();
 
         List<IStatisticCondition> CoreConditions = new List<IStatisticCondition>();
+
+        public void AddCondition(IStatistic statistic)
+        {
+            foreach (var condition in statistic.Conditions)
+            {
+                AddCondition(condition.GetType());
+            }
+            InitializationFinnished += statistic.Initialize;
+        }
 
         public void AddCondition(Type ConditionType)
         {
@@ -32,18 +43,20 @@ namespace HandHistories.Statistics.Core
             {
                 throw new InvalidOperationException("Can't add Conditions when we have prepared the tree");
             }
-            if (AllConditionTypes.Contains(ConditionType))
+            if (!AllConditionTypes.Contains(ConditionType))
             {
-                throw new Exception("Condition already exists: " + ConditionType.FullName);
-            }
-            AllConditionTypes.Add(ConditionType);
+                AllConditionTypes.Add(ConditionType);
+            } 
         }
 
+        /// <summary>
+        /// Instaniates all conditions and chains all conditions
+        /// </summary>
         public void InitializeTree()
         {
             if (CurrentState != ConditionTreeState.AddConditions)
             {
-                throw new InvalidOperationException("Can't prepare the tree multiple times");
+                throw new InvalidOperationException("Can't initialize the tree multiple times");
             }
             CurrentState = ConditionTreeState.Ready;
 
@@ -52,12 +65,13 @@ namespace HandHistories.Statistics.Core
                 CreateConditionFromType(conditionType);
             }
 
-            foreach (var stat in AddConditions)
+            List<IStatisticCondition> allConditions = new List<IStatisticCondition>(AllConditions);
+            foreach (var stat in allConditions)
             {
                 AddPrequisites(stat);
             }
 
-            foreach (var stat in AddConditions)
+            foreach (var stat in AllConditions)
             {
                 if (stat.PrequisiteConditions == null)
                 {
@@ -67,10 +81,14 @@ namespace HandHistories.Statistics.Core
                 {
                     foreach (var prequisite in stat.PrequisiteConditions)
                     {
-                        IStatisticCondition chain = AddConditions.FirstOrDefault(p => p.GetType() == prequisite);
+                        IStatisticCondition chain = AllConditions.FirstOrDefault(p => p.GetType() == prequisite);
                         chain.ConditionTrigger += stat.EvaluateHand;
                     }
                 }
+            }
+            if (InitializationFinnished != null)
+            {
+                InitializationFinnished(this);
             }
         }
 
@@ -82,7 +100,7 @@ namespace HandHistories.Statistics.Core
             {
                 throw new Exception("Not a StatisticCondition: " + statistic.GetType().FullName);
             }
-            AddConditions.Add(newCondition);
+            AllConditions.Add(newCondition);
             return newCondition;
         }
 
@@ -99,7 +117,7 @@ namespace HandHistories.Statistics.Core
 
             foreach (var prequisite in stat.PrequisiteConditions)
             {
-                var Condition = AddConditions.FirstOrDefault(p => p.GetType() == prequisite);
+                var Condition = AllConditions.FirstOrDefault(p => p.GetType() == prequisite);
                 if (Condition == null)
                 {
                     IStatisticCondition newCondition = CreateConditionFromType(prequisite);
@@ -126,7 +144,7 @@ namespace HandHistories.Statistics.Core
             {
                 throw new Exception("Must initialize tree before GetHandCondition() can be used");
             }
-            return AddConditions.Find(p => p.GetType() == statisticType);
+            return AllConditions.Find(p => p.GetType() == statisticType);
         }
     }
 }

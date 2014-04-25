@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HandHistories.Statistics.Stats
+namespace HandHistories.Statistics.Conditions
 {
     public class PlayerHandCondition : IStatisticCondition
     {

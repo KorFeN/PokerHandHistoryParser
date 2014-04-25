@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace HandHistories.Statistics.Stats
+namespace HandHistories.Statistics.Conditions
 {
     public class ThreeBetInstanceCondition : IStatisticCondition
     {
@@ -41,10 +41,15 @@ namespace HandHistories.Statistics.Stats
         {
             HandAction PFRAction = generalHand.PreFlopActions
                 .FirstOrDefault(p => p.IsRaise);
+            HandAction PFReRaiseAction = generalHand.PreFlopActions
+                .Where(p => p.IsRaise)
+                .Skip(1)
+                .FirstOrDefault();
             if (PFRAction != null)
             {
                 HandAction ThreeBetOPP = hand.PlayerActions.Street(Street.Preflop)
-                .FirstOrDefault(p => p.ActionNumber > PFRAction.ActionNumber);
+                .FirstOrDefault(p => p.ActionNumber > PFRAction.ActionNumber
+                && (PFReRaiseAction == null || p.ActionNumber <= PFReRaiseAction.ActionNumber));
                 if (ThreeBetOPP != null)
                 {
                     hand.CustomHandData.StoreData(GetType(), ThreeBetOPP);

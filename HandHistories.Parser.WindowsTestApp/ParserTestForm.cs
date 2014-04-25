@@ -8,9 +8,10 @@ using System.Text;
 using System.Windows.Forms;
 using HandHistories.Objects.GameDescription;
 using HandHistories.Parser.Parsers.Factory;
-using HandHistories.Statistics.Stats;
+using HandHistories.Statistics.Conditions;
 using HandHistories.Statistics;
 using HandHistories.Statistics.Core;
+using HandHistories.Statistics.Statistics;
 using System.Diagnostics;
 
 namespace HandHistories.Parser.WindowsTestApp
@@ -76,19 +77,17 @@ namespace HandHistories.Parser.WindowsTestApp
             Stopwatch duration = new Stopwatch();
             duration.Start();
 
+            IStatistic VPIP = BasicHandStatistic.CreateVPIPStatistic();
+            IStatistic PFR = BasicHandStatistic.CreatePFRStatistic();
+            IStatistic _3Bet = BasicHandStatistic.Create3BetStatistic();
+
             var StatTree = new ConditionTree();
-            StatTree.AddCondition(typeof(PlayerHandCondition));
-            StatTree.AddCondition(typeof(VPIPInstanceCondition));
-            StatTree.AddCondition(typeof(PreflopRaiseCondition));
-            StatTree.AddCondition(typeof(ThreeBetInstanceCondition));
-            StatTree.AddCondition(typeof(ThreeBetOppertunityCondition));
+            StatTree.AddCondition(VPIP);
+            StatTree.AddCondition(PFR);
+            StatTree.AddCondition(_3Bet);
             StatTree.InitializeTree();
 
             var handsPlayed = new SimpleStatCounter(StatTree.GetHandCondition(typeof(PlayerHandCondition)));
-            var vpipCounter = new SimpleStatCounter(StatTree.GetHandCondition(typeof(VPIPInstanceCondition)));
-            var pfrCounter = new SimpleStatCounter(StatTree.GetHandCondition(typeof(PreflopRaiseCondition)));
-            var _3BetCounterINST = new SimpleStatCounter(StatTree.GetHandCondition(typeof(ThreeBetInstanceCondition)));
-            var _3BetCounterOPP = new SimpleStatCounter(StatTree.GetHandCondition(typeof(ThreeBetOppertunityCondition)));
 
             IHandHistoryParserFactory factory = new HandHistoryParserFactoryImpl();
             var handParser = factory.GetFullHandHistoryParser((SiteName)listBoxSite.SelectedItem);
@@ -106,9 +105,9 @@ namespace HandHistories.Parser.WindowsTestApp
                     StatTree.EvaluateHand(generalHand, compiledHand);
                 }
 
-                double vpipProc = Math.Round((double)vpipCounter.Count / (double)handsPlayed.Count * 100, 1);
-                double pfrProc = Math.Round((double)pfrCounter.Count / (double)handsPlayed.Count * 100, 1);
-                double threeBetProc = Math.Round((double)_3BetCounterINST.Count / (double)_3BetCounterOPP.Count * 100, 1);
+                decimal vpipProc = Math.Round(VPIP.Value * 100, 1);
+                decimal pfrProc = Math.Round(PFR.Value * 100, 1);
+                decimal threeBetProc = Math.Round(_3Bet.Value * 100, 1);
                 string StatisticString = string.Format("{0}/{1}/{2}", vpipProc, pfrProc, threeBetProc);
                 duration.Stop();
                 MessageBox.Show(this, string.Format("Player {0} played {1} of {2} hands.\r\n{3}\r\nin {4}ms", new object[]{textBox_PlayerName.Text, handsPlayed.Count, hands.Count, StatisticString, duration.ElapsedMilliseconds}));

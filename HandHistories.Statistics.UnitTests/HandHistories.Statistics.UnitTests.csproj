@@ -4,14 +4,13 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{9248B9B8-5129-4516-B318-2AC7F07AC3A0}</ProjectGuid>
+    <ProjectGuid>{9456165B-F98C-4060-A2CE-AC93A5B4F756}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>HandHistories.Statistics</RootNamespace>
-    <AssemblyName>HandHistories.Statistics</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <RootNamespace>HandHistories.Statistics.UnitTests</RootNamespace>
+    <AssemblyName>HandHistories.Statistics.UnitTests</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -31,6 +30,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="nunit.framework">
+      <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -40,26 +42,25 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Core\ConditionTree.cs" />
-    <Compile Include="Core\StatCounter.cs" />
-    <Compile Include="HandData\GeneralHandData.cs" />
-    <Compile Include="HandData\CustomHandData.cs" />
-    <Compile Include="HandData\HandData.cs" />
-    <Compile Include="HandData\PlayerHandData.cs" />
-    <Compile Include="Interfaces\IStatisticCondition.cs" />
-    <Compile Include="Interfaces\IStatisticCounter.cs" />
+    <Compile Include="ConditionTests\ConditionTestBase.cs" />
+    <Compile Include="ConditionTests\PreFlop\PFRInstanceTestTest.cs" />
+    <Compile Include="ConditionTests\PreFlop\VPIPOppertunityTest.cs" />
+    <Compile Include="ConditionTests\PreFlop\VPIPInstanceTest.cs" />
+    <Compile Include="ConditionTests\PreFlop\_3BetInstanceTest.cs" />
+    <Compile Include="ConditionTests\PreFlop\_3BetOppertunityTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Conditions\HandCondition.cs" />
-    <Compile Include="Conditions\PreFlop\PreflopRaiseCondition.cs" />
-    <Compile Include="Conditions\PreFlop\ThreeBetCondition.cs" />
-    <Compile Include="Conditions\PreFlop\VPIPCondition.cs" />
-    <Compile Include="Statistics\BasicStatistic.cs" />
-    <Compile Include="Interfaces\IStatistic.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\HandHistories.Objects\HandHistories.Objects.csproj">
       <Project>{d5c61a3a-2725-47d9-a828-f5ce4ec19a4a}</Project>
       <Name>HandHistories.Objects</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\HandHistories.Statistics\HandHistories.Statistics.csproj">
+      <Project>{9248b9b8-5129-4516-b318-2ac7f07ac3a0}</Project>
+      <Name>HandHistories.Statistics</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
