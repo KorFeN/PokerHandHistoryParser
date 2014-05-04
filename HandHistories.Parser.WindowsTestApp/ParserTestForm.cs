@@ -99,10 +99,7 @@ namespace HandHistories.Parser.WindowsTestApp
                 {
                     var parsedHand = handParser.ParseFullHandHistory(hand, true);
                     GeneralHandData generalHand = new GeneralHandData(parsedHand);
-                    PlayerHandData compiledHand = generalHand.PlayerList.ContainsKey(textBox_PlayerName.Text)
-                        ? generalHand.PlayerList[textBox_PlayerName.Text] 
-                        : new PlayerHandData(parsedHand, textBox_PlayerName.Text);
-                    StatTree.EvaluateHand(generalHand, compiledHand);
+                    StatTree.EvaluateHand(generalHand);
                 }
 
                 decimal vpipProc = Math.Round(VPIP.Value * 100, 1);

@@ -48,6 +48,12 @@
     <Compile Include="ConditionTests\PreFlop\VPIPInstanceTest.cs" />
     <Compile Include="ConditionTests\PreFlop\_3BetInstanceTest.cs" />
     <Compile Include="ConditionTests\PreFlop\_3BetOppertunityTest.cs" />
+    <Compile Include="PositionTests\PositionTests_3Max.cs" />
+    <Compile Include="PositionTests\PositionTests_2Max.cs" />
+    <Compile Include="PositionTests\PositionTests_4Max.cs" />
+    <Compile Include="PositionTests\PositionTests_5Max.cs" />
+    <Compile Include="PositionTests\PositionTest.cs" />
+    <Compile Include="PositionTests\PositionTests_6Max.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

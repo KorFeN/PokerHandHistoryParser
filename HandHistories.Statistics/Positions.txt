@@ -1,0 +1,7 @@
+﻿10 max: UTG, EP1, EP2, MP1, MP2, MP3, CO, BTN, SB, BB
+
+6 max: UTG, MP, CO, BTN, SB, BB
+5 max: MP, CO, BTN, SB, BB
+4 max: CO, BTN, SB, BB
+3 max: BTN, SB, BB
+2 max: BTN, BB

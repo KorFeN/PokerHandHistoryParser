@@ -126,15 +126,18 @@ namespace HandHistories.Statistics.Core
             }
         }
 
-        public void EvaluateHand(GeneralHandData generalHand, PlayerHandData playerHand)
+        public void EvaluateHand(GeneralHandData generalHand)
         {
             if (CurrentState != ConditionTreeState.Ready)
             {
                 throw new Exception("Must initialize tree before evaluating hands");
             }
-            foreach (var stat in CoreConditions)
+            foreach (var player in generalHand.PlayerList)
             {
-                stat.EvaluateHand(generalHand, playerHand);
+                foreach (var stat in CoreConditions)
+                {
+                    stat.EvaluateHand(generalHand, player.Value, null);
+                }
             }
         }
 

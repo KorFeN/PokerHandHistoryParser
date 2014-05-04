@@ -1,4 +1,5 @@
-﻿using HandHistories.Objects.Players;
+﻿using HandHistories.Objects.Actions;
+using HandHistories.Objects.Players;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace HandHistories.Statistics.Conditions
 {
     public class PlayerHandCondition : IStatisticCondition
     {
-        public void EvaluateHand(GeneralHandData generalHand, PlayerHandData hand)
+        public void EvaluateHand(GeneralHandData generalHand, PlayerHandData hand, HandAction action)
         {
             if (!hand.handHistory.Cancelled)
             {
@@ -18,7 +19,7 @@ namespace HandHistories.Statistics.Conditions
                 {
                     if (ConditionTrigger != null)
                     {
-                        ConditionTrigger(generalHand, hand);
+                        ConditionTrigger(generalHand, hand, null);
                     }
                 }
             }

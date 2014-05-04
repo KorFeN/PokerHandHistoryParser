@@ -36,5 +36,18 @@ namespace HandHistories.Statistics
                 return preFlopActions;
             }
         }
+
+        List<HandAction> flopActions;
+        public List<HandAction> FlopActions
+        {
+            get
+            {
+                if (flopActions == null)
+                {
+                   flopActions = handHistory.HandActions.Street(Objects.Cards.Street.Flop).ToList();
+                }
+                return flopActions;
+            }
+        }
     }
 }

@@ -10,7 +10,7 @@ namespace HandHistories.Statistics.Conditions
 {
     public class VPIPOppertunityCondition : IStatisticCondition
     {
-        public void EvaluateHand(GeneralHandData generalHand, PlayerHandData hand)
+        public void EvaluateHand(GeneralHandData generalHand, PlayerHandData hand, HandAction action)
         {
             HandAction OppertunityAction = hand.PlayerActions.Street(Street.Preflop)
                 .FirstOrDefault(p => p.HandActionType == HandActionType.CALL ||
@@ -21,7 +21,7 @@ namespace HandHistories.Statistics.Conditions
             {
                 if (ConditionTrigger != null)
                 {
-                    ConditionTrigger(generalHand, hand);
+                    ConditionTrigger(generalHand, hand, OppertunityAction);
                 }
             }
         }
@@ -36,7 +36,7 @@ namespace HandHistories.Statistics.Conditions
 
     public class VPIPInstanceCondition : IStatisticCondition
     {
-        public void EvaluateHand(GeneralHandData generalHand, PlayerHandData hand)
+        public void EvaluateHand(GeneralHandData generalHand, PlayerHandData hand, HandAction action)
         {
             HandAction VPIPAction = hand.PlayerActions.Street(Street.Preflop)
                 .FirstOrDefault(p => p.HandActionType == HandActionType.CALL ||
@@ -46,7 +46,7 @@ namespace HandHistories.Statistics.Conditions
             {
                 if (ConditionTrigger != null)
                 {
-                    ConditionTrigger(generalHand, hand);
+                    ConditionTrigger(generalHand, hand, VPIPAction);
                 }
             }
         }

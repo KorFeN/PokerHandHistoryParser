@@ -2,6 +2,7 @@
 using HandHistories.Objects.Hand;
 using HandHistories.Objects.Players;
 using HandHistories.Statistics.HandData;
+using HandHistories.Statistics.Positions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,6 +37,14 @@ namespace HandHistories.Statistics
                     playerActions = handHistory.HandActions.Where(p => p.PlayerName == playerName).ToList();
                 }
                 return playerActions;
+            }
+        }
+
+        public PreFlopPosition Position
+        {
+            get
+            {
+                return PFPosition.GetPosition(handData.handHistory, playerName);
             }
         }
     }

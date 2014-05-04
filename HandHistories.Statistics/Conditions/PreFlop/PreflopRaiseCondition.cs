@@ -9,16 +9,15 @@ namespace HandHistories.Statistics.Conditions
 {
     public class PreflopRaiseCondition : IStatisticCondition
     {
-        public void EvaluateHand(GeneralHandData generalHand, PlayerHandData hand)
+        public void EvaluateHand(GeneralHandData generalHand, PlayerHandData hand, HandAction action)
         {
             HandAction PFRAction = hand.PlayerActions.Street(Street.Preflop)
                 .FirstOrDefault(p => p.IsRaise);
             if (PFRAction != null)
             {
-                hand.CustomHandData.StoreData(this.GetType(), PFRAction);
                 if (ConditionTrigger != null)
                 {
-                    ConditionTrigger(generalHand, hand);
+                    ConditionTrigger(generalHand, hand, PFRAction);
                 }
             }
         }

@@ -9,64 +9,48 @@ namespace HandHistories.Statistics.Conditions
 {
     public class ThreeBetInstanceCondition : IStatisticCondition
     {
-        public void EvaluateHand(GeneralHandData generalHand, PlayerHandData hand)
+        public void EvaluateHand(GeneralHandData generalHand, PlayerHandData hand, HandAction action)
         {
-            HandAction PFRAction = hand.PlayerActions.Street(Street.Preflop)
-                .FirstOrDefault(p => p.IsRaise);
-            HandAction ThreeBetAction = generalHand.PreFlopActions
-                .Where(p => p.IsRaise)
-                .Skip(1)
-                .FirstOrDefault();
-            if (PFRAction != null && PFRAction == ThreeBetAction)
+            if (action.IsRaise)
             {
                 if (ConditionTrigger != null)
                 {
-                    ConditionTrigger(generalHand, hand); 
+                    ConditionTrigger(generalHand, hand, null); 
                 }
             }
         }
 
         public event StatisticConditionTrigger ConditionTrigger;
 
-
         public IEnumerable<Type> PrequisiteConditions
         {
-            get { return new Type[] { typeof(PlayerHandCondition) }; }
+            get { return new Type[] { typeof(ThreeBetOppertunityCondition) }; }
         }
     }
 
     public class ThreeBetOppertunityCondition : IStatisticCondition
     {
-        public void EvaluateHand(GeneralHandData generalHand, PlayerHandData hand)
+        public void EvaluateHand(GeneralHandData generalHand, PlayerHandData hand, HandAction PFRAction)
         {
-            HandAction PFRAction = generalHand.PreFlopActions
-                .FirstOrDefault(p => p.IsRaise);
-            HandAction PFReRaiseAction = generalHand.PreFlopActions
-                .Where(p => p.IsRaise)
-                .Skip(1)
-                .FirstOrDefault();
-            if (PFRAction != null)
+            for (int i = PFRAction.ActionNumber + 1; i < generalHand.handHistory.HandActions.Count; i++)
             {
-                HandAction ThreeBetOPP = hand.PlayerActions.Street(Street.Preflop)
-                .FirstOrDefault(p => p.ActionNumber > PFRAction.ActionNumber
-                && (PFReRaiseAction == null || p.ActionNumber <= PFReRaiseAction.ActionNumber));
-                if (ThreeBetOPP != null)
+                HandAction action = generalHand.handHistory.HandActions[i];
+                if (ConditionTrigger != null)
                 {
-                    hand.CustomHandData.StoreData(GetType(), ThreeBetOPP);
-                    if (ConditionTrigger != null)
-                    {
-                        ConditionTrigger(generalHand, hand);
-                    }
+                    ConditionTrigger(generalHand, generalHand.PlayerList[action.PlayerName], action);
+                }
+                if (action.IsRaise)
+                {
+                    break;
                 }
             }
         }
 
         public event StatisticConditionTrigger ConditionTrigger;
 
-
         public IEnumerable<Type> PrequisiteConditions
         {
-            get { return new Type[] { typeof(PlayerHandCondition) }; }
+            get { return new Type[] { typeof(PreflopRaiseCondition) }; }
         }
     }
 }
