@@ -1,4 +1,5 @@
-﻿using HandHistories.Objects.GameDescription;
+﻿using HandHistories.Objects.Actions;
+using HandHistories.Objects.GameDescription;
 using HandHistories.Objects.Hand;
 using HandHistories.Objects.Players;
 using HandHistories.Statistics.Core;
@@ -73,7 +74,13 @@ namespace HandHistories.Statistics.UnitTests.ConditionTests
             public void Initialize(ConditionTree tree)
             {
                 tree.InitializationFinnished -= Initialize;
-                tree.GetHandCondition(ConditionType).ConditionTrigger += delegate { Value = 1; }; ;
+                tree.GetHandCondition(ConditionType).ConditionTrigger += delegate(GeneralHandData generalHand, PlayerHandData hand, HandAction action)
+                {
+                    if (hand.playerName == TestPlayer)
+                    {
+                        Value = 1;
+                    } 
+                };
             }
 
             public string Name
@@ -111,9 +118,9 @@ namespace HandHistories.Statistics.UnitTests.ConditionTests
         {
             ConditionTester conditionTest = new ConditionTester(condition);
             ConditionTree testTree = new ConditionTree();
-            testTree.AddCondition(conditionTest);
+            testTree.AddStatistic(conditionTest);
             testTree.InitializeTree();
-            testTree.EvaluateHand(new GeneralHandData(hand), new PlayerHandData(hand, TestPlayer));
+            testTree.EvaluateHand(new GeneralHandData(hand));
 
             Assert.AreEqual(ExpectedTrigger, conditionTest.Triggered, 
                 string.Format("Condition {0} Failed. It did{1} trigger on hand with index {2}", 

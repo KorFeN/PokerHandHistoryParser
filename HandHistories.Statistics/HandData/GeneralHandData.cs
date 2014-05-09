@@ -1,6 +1,7 @@
 ﻿using HandHistories.Objects.Actions;
 using HandHistories.Objects.Hand;
 using HandHistories.Statistics.HandData;
+using HandHistories.Statistics.PlayerStats;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,6 +48,19 @@ namespace HandHistories.Statistics
                    flopActions = handHistory.HandActions.Street(Objects.Cards.Street.Flop).ToList();
                 }
                 return flopActions;
+            }
+        }
+
+        PrimaryKey primaryKey;
+        public PrimaryKey Key
+        {
+            get
+            {
+                if (primaryKey == null)
+                {
+                    primaryKey = PrimaryKey.CreateFromHand(handHistory);
+                }
+                return primaryKey;
             }
         }
     }

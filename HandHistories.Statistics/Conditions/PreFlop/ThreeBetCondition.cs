@@ -32,25 +32,25 @@ namespace HandHistories.Statistics.Conditions
     {
         public void EvaluateHand(GeneralHandData generalHand, PlayerHandData hand, HandAction PFRAction)
         {
-            for (int i = PFRAction.ActionNumber + 1; i < generalHand.handHistory.HandActions.Count; i++)
-            {
-                HandAction action = generalHand.handHistory.HandActions[i];
-                if (ConditionTrigger != null)
-                {
-                    ConditionTrigger(generalHand, generalHand.PlayerList[action.PlayerName], action);
-                }
-                if (action.IsRaise)
-                {
-                    break;
-                }
-            }
+            //for (int i = PFRAction.ActionNumber + 1; i < generalHand.handHistory.HandActions.Count; i++)
+            //{
+            //    HandAction action = generalHand.handHistory.HandActions[i];
+            //    if (ConditionTrigger != null)
+            //    {
+            //        ConditionTrigger(generalHand, generalHand.PlayerList[action.PlayerName], action);
+            //    }
+            //    if (action.IsRaise)
+            //    {
+            //        break;
+            //    }
+            //}
         }
 
         public event StatisticConditionTrigger ConditionTrigger;
 
         public IEnumerable<Type> PrequisiteConditions
         {
-            get { return new Type[] { typeof(PreflopRaiseCondition) }; }
+            get { return new Type[] { typeof(PlayerHandCondition) }; }
         }
     }
 }

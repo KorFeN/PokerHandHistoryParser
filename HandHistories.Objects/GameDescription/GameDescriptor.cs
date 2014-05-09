@@ -58,7 +58,7 @@ namespace HandHistories.Objects.GameDescription
         public SeatType SeatType { get; set; }
 
         [DataMember]        
-        public TableType TableType { get; set; }        
+        public TableType TableType { get; set; }
         
         public override bool Equals(object obj)
         {

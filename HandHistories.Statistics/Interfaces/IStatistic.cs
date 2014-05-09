@@ -8,9 +8,8 @@ namespace HandHistories.Statistics
 {
     public interface IStatistic
     {
-        IEnumerable<IStatisticCondition> Conditions { get; }
-        void Initialize(ConditionTree tree);
         string Name { get; }
-        decimal Value { get; }
+        IEnumerable<Type> Conditions { get; }
+        decimal GetValue(CounterValueCollection valueCollection);
     }
 }

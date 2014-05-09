@@ -203,10 +203,26 @@ namespace HandHistories.Objects.GameDescription
             return limit;
         }
 
+        public static bool operator ==(Limit c1, Limit c2)
+        {
+            return c1.Equals(c2);
+        }
+
+        public static bool operator !=(Limit c1, Limit c2)
+        {
+            return !c1.Equals(c2);
+        }
+
         public override bool Equals(object obj)
         {
-            if (obj == null) return false;
-            return obj.ToString().Equals(ToString());
+            var other = obj as Limit;
+            
+            if (ReferenceEquals(other, null)) return false;
+            return BigBlind == other.BigBlind &&
+                SmallBlind == other.SmallBlind &&
+                Currency == other.Currency &&
+                IsAnteTable == other.IsAnteTable &&
+                Ante == other.Ante;
         }
 
         public override int GetHashCode()

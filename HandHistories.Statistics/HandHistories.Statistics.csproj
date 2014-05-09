@@ -42,13 +42,16 @@
   <ItemGroup>
     <Compile Include="Conditions\StreetConditions\FlopCondition.cs" />
     <Compile Include="Core\ConditionTree.cs" />
+    <Compile Include="PlayerStats\CounterGroup.cs" />
     <Compile Include="Core\StatCounter.cs" />
+    <Compile Include="PlayerStats\PlayerGroup.cs" />
+    <Compile Include="PlayerStats\PlayerStatistics.cs" />
     <Compile Include="HandData\GeneralHandData.cs" />
     <Compile Include="HandData\CustomHandData.cs" />
     <Compile Include="HandData\HandData.cs" />
     <Compile Include="HandData\PlayerHandData.cs" />
     <Compile Include="Interfaces\IStatisticCondition.cs" />
-    <Compile Include="Interfaces\IStatisticCounter.cs" />
+    <Compile Include="PlayerStats\PrimaryKey.cs" />
     <Compile Include="Positions\Position.cs" />
     <Compile Include="Positions\Position.Lookup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -56,6 +59,8 @@
     <Compile Include="Conditions\PreFlop\PreflopRaiseCondition.cs" />
     <Compile Include="Conditions\PreFlop\ThreeBetCondition.cs" />
     <Compile Include="Conditions\PreFlop\VPIPCondition.cs" />
+    <Compile Include="StatisticsEvaluator.cs" />
+    <Compile Include="Statistics\BasicCounter.cs" />
     <Compile Include="Statistics\BasicStatistic.cs" />
     <Compile Include="Interfaces\IStatistic.cs" />
   </ItemGroup>
@@ -65,9 +70,11 @@
       <Name>HandHistories.Objects</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
-    <Content Include="Positions.txt" />
+    <None Include="ClassDiagram1.cd" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Positions\Positions.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace HandHistories.Statistics
 {
-    public class SimpleStatCounter : IStatisticCounter
+    public class SimpleStatCounter
     {
         public readonly IStatisticCondition Condition;
 

@@ -13,6 +13,7 @@ using HandHistories.Statistics;
 using HandHistories.Statistics.Core;
 using HandHistories.Statistics.Statistics;
 using System.Diagnostics;
+using HandHistories.Statistics.PlayerStats;
 
 namespace HandHistories.Parser.WindowsTestApp
 {
@@ -77,17 +78,17 @@ namespace HandHistories.Parser.WindowsTestApp
             Stopwatch duration = new Stopwatch();
             duration.Start();
 
-            IStatistic VPIP = BasicHandStatistic.CreateVPIPStatistic();
-            IStatistic PFR = BasicHandStatistic.CreatePFRStatistic();
-            IStatistic _3Bet = BasicHandStatistic.Create3BetStatistic();
+            StatisticsEvaluator statEval = new StatisticsEvaluator();
 
-            var StatTree = new ConditionTree();
-            StatTree.AddCondition(VPIP);
-            StatTree.AddCondition(PFR);
-            StatTree.AddCondition(_3Bet);
-            StatTree.InitializeTree();
+            IStatistic VPIP = BasicHandStatistic.VPIP;
+            IStatistic PFR = BasicHandStatistic.PFR;
+            IStatistic _3Bet = BasicHandStatistic.ThreeBet;
 
-            var handsPlayed = new SimpleStatCounter(StatTree.GetHandCondition(typeof(PlayerHandCondition)));
+            statEval.AddStatistic(BasicCounterStatistic.Hands);
+            statEval.AddStatistic(VPIP);
+            statEval.AddStatistic(PFR);
+            statEval.AddStatistic(_3Bet);
+            statEval.Initialize();
 
             IHandHistoryParserFactory factory = new HandHistoryParserFactoryImpl();
             var handParser = factory.GetFullHandHistoryParser((SiteName)listBoxSite.SelectedItem);
@@ -99,20 +100,32 @@ namespace HandHistories.Parser.WindowsTestApp
                 {
                     var parsedHand = handParser.ParseFullHandHistory(hand, true);
                     GeneralHandData generalHand = new GeneralHandData(parsedHand);
-                    StatTree.EvaluateHand(generalHand);
+                    statEval.EvaluateHand(generalHand);
                 }
 
-                decimal vpipProc = Math.Round(VPIP.Value * 100, 1);
-                decimal pfrProc = Math.Round(PFR.Value * 100, 1);
-                decimal threeBetProc = Math.Round(_3Bet.Value * 100, 1);
-                string StatisticString = string.Format("{0}/{1}/{2}", vpipProc, pfrProc, threeBetProc);
+                var counters = statEval.GetPlayerCounters(textBox_PlayerName.Text, new KeyFilter()
+                {
+                    Site = SiteName.PokerStars,
+                    PokerFormat = PokerFormat.CashGame,
+                    GameType = GameType.NoLimitHoldem,
+                    Limits = LimitRange.All,
+                    NumPlayersActiveMin = 2,
+                    NumPlayersActiveMax = 10
+                });
+
+                decimal handsPlayed = Math.Round(BasicCounterStatistic.Hands.GetValue(counters));
+                decimal vpipProc = Math.Round(VPIP.GetValue(counters) * 100, 1);//Math.Round(VPIP.Value * 100, 1);
+                decimal pfrProc = Math.Round(PFR.GetValue(counters) * 100, 1);
+                //decimal threeBetProc = Math.Round(_3Bet.Value * 100, 1);
+                string StatisticString = string.Format("{0}/{1}/{2}", vpipProc, pfrProc, "");
                 duration.Stop();
-                MessageBox.Show(this, string.Format("Player {0} played {1} of {2} hands.\r\n{3}\r\nin {4}ms", new object[]{textBox_PlayerName.Text, handsPlayed.Count, hands.Count, StatisticString, duration.ElapsedMilliseconds}));
+
+                MessageBox.Show(this, string.Format("Player {0} played {1} of {2} hands.\r\n{3}\r\nin {4}ms", new object[]{textBox_PlayerName.Text, handsPlayed, hands.Count, StatisticString, duration.ElapsedMilliseconds}));
             }
             catch (Exception ex)
             {
                 duration.Stop();
-                MessageBox.Show(this, ex.Message + "\r\n" + ex.StackTrace, "Error");
+                MessageBox.Show(this, ex.Message + "\r\n" + ex.StackTrace, "Error"); 
             }
         }
     }

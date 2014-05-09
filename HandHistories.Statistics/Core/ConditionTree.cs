@@ -8,7 +8,10 @@ namespace HandHistories.Statistics.Core
 {
     /// <summary>
     /// This class creates all conditions and makes sure there is only one instance per tree
-    /// and chains all stats in the correct order
+    /// and chains all stats in the correct order.
+    /// 
+    /// The condition tree only accepts Types that inherits IStatisticCondition that is to prevent modification
+    /// of the conditions by using constructor parameters however inhereitance is allowed
     /// </summary>
     public class ConditionTree
     {
@@ -22,19 +25,18 @@ namespace HandHistories.Statistics.Core
 
         ConditionTreeState CurrentState = ConditionTreeState.AddConditions;
 
-        List<Type> AllConditionTypes = new List<Type>();
+        List<Type> AddedConditions = new List<Type>();
 
         List<IStatisticCondition> AllConditions = new List<IStatisticCondition>();
 
         List<IStatisticCondition> CoreConditions = new List<IStatisticCondition>();
 
-        public void AddCondition(IStatistic statistic)
+        public void AddStatistic(IStatistic statistic)
         {
             foreach (var condition in statistic.Conditions)
             {
-                AddCondition(condition.GetType());
+                AddCondition(condition);
             }
-            InitializationFinnished += statistic.Initialize;
         }
 
         public void AddCondition(Type ConditionType)
@@ -43,14 +45,14 @@ namespace HandHistories.Statistics.Core
             {
                 throw new InvalidOperationException("Can't add Conditions when we have prepared the tree");
             }
-            if (!AllConditionTypes.Contains(ConditionType))
+            if (!AddedConditions.Contains(ConditionType))
             {
-                AllConditionTypes.Add(ConditionType);
+                AddedConditions.Add(ConditionType);
             } 
         }
 
         /// <summary>
-        /// Instaniates all conditions and chains all conditions
+        /// Instaniates all conditions and creates the tree
         /// </summary>
         public void InitializeTree()
         {
@@ -58,13 +60,14 @@ namespace HandHistories.Statistics.Core
             {
                 throw new InvalidOperationException("Can't initialize the tree multiple times");
             }
-            CurrentState = ConditionTreeState.Ready;
-
-            foreach (var conditionType in AllConditionTypes)
+            
+            //Instansiates all conditions
+            foreach (var conditionType in AddedConditions)
             {
                 CreateConditionFromType(conditionType);
             }
 
+            //Instansiating all prequisite conditions
             List<IStatisticCondition> allConditions = new List<IStatisticCondition>(AllConditions);
             foreach (var stat in allConditions)
             {
@@ -86,10 +89,13 @@ namespace HandHistories.Statistics.Core
                     }
                 }
             }
+
             if (InitializationFinnished != null)
             {
                 InitializationFinnished(this);
             }
+            AddedConditions = null;
+            CurrentState = ConditionTreeState.Ready;
         }
 
         private IStatisticCondition CreateConditionFromType(Type item)

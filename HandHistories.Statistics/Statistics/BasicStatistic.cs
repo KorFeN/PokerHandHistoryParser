@@ -9,19 +9,28 @@ namespace HandHistories.Statistics.Statistics
 {
     public class BasicHandStatistic : IStatistic
     {
-        public static BasicHandStatistic CreateVPIPStatistic()
+        public static BasicHandStatistic VPIP
         {
-            return new BasicHandStatistic(new VPIPOppertunityCondition(), new VPIPInstanceCondition(), "VPIP");
+            get
+            {
+                return new BasicHandStatistic(typeof(VPIPOppertunityCondition), typeof(VPIPInstanceCondition), "VPIP");
+            }
         }
 
-        public static BasicHandStatistic CreatePFRStatistic()
+        public static BasicHandStatistic PFR
         {
-            return new BasicHandStatistic(new VPIPOppertunityCondition(), new PreflopRaiseCondition(), "PFR");
+            get
+            {
+                return new BasicHandStatistic(typeof(VPIPOppertunityCondition), typeof(PreflopRaiseCondition), "PFR");
+            }
         }
 
-        public static BasicHandStatistic Create3BetStatistic()
+        public static BasicHandStatistic ThreeBet
         {
-            return new BasicHandStatistic(new ThreeBetOppertunityCondition(), new ThreeBetInstanceCondition(), "3Bet");
+            get
+            {
+                return new BasicHandStatistic(typeof(ThreeBetOppertunityCondition), typeof(ThreeBetInstanceCondition), "3Bet");
+            }
         }
 
         public string Name
@@ -30,33 +39,26 @@ namespace HandHistories.Statistics.Statistics
             private set;
         }
 
-        public BasicHandStatistic(IStatisticCondition OppertunityCondition, IStatisticCondition InstanceCondition, string name)
+        public BasicHandStatistic(Type OppertunityCondition, Type InstanceCondition, string name)
         {
             _oppertunityCondition = OppertunityCondition;
             _instanceCondition = InstanceCondition;
             Name = name;
         }
 
-        IStatisticCondition _oppertunityCondition;
-        IStatisticCondition _instanceCondition;
-        SimpleStatCounter OppertunityCounter;
-        SimpleStatCounter InstanceCounter;
+        Type _oppertunityCondition;
+        Type _instanceCondition;
 
-        public decimal Value
+        public decimal GetValue(CounterValueCollection counters)
         {
-            get { return (decimal)InstanceCounter.Count / (decimal)OppertunityCounter.Count; }
+            int INST = counters[_instanceCondition];
+            int OPP = counters[_oppertunityCondition];
+            return (decimal)INST / (decimal)OPP;
         }
 
-        public void Initialize(ConditionTree tree)
+        public IEnumerable<Type> Conditions
         {
-            tree.InitializationFinnished -= Initialize;
-            OppertunityCounter = new SimpleStatCounter(tree.GetHandCondition(_oppertunityCondition.GetType()));
-            InstanceCounter = new SimpleStatCounter(tree.GetHandCondition(_instanceCondition.GetType()));
-        }
-
-        public IEnumerable<IStatisticCondition> Conditions
-        {
-            get { return new IStatisticCondition[] { _oppertunityCondition, _instanceCondition }; }
+            get { return new Type[] { _oppertunityCondition, _instanceCondition }; }
         }
     }
 }
