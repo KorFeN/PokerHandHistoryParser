@@ -59,13 +59,13 @@ namespace HandHistories.Statistics.UnitTests.ConditionTests
         class ConditionTester : IStatistic
         {
             Type ConditionType;
-            public ConditionTester(IStatisticCondition condition)
+            public ConditionTester(Type condition)
             {
-                ConditionType = condition.GetType();
-                Conditions = new List<IStatisticCondition> { condition };
+                ConditionType = condition;
+                Conditions = new List<Type> { condition };
             }
 
-            public IEnumerable<IStatisticCondition> Conditions
+            public IEnumerable<Type> Conditions
             {
                 get;
                 private set;
@@ -101,11 +101,16 @@ namespace HandHistories.Statistics.UnitTests.ConditionTests
                     return Value == 1;
                 }
             }
+
+            public decimal GetValue(CounterValueCollection valueCollection)
+            {
+                throw new NotImplementedException();
+            }
         }
 
-        IStatisticCondition condition;
+        Type condition;
 
-        public ConditionTest(IStatisticCondition conditionToTest)
+        public ConditionTest(Type conditionToTest)
         {
             condition = conditionToTest;
         }
@@ -120,6 +125,7 @@ namespace HandHistories.Statistics.UnitTests.ConditionTests
             ConditionTree testTree = new ConditionTree();
             testTree.AddStatistic(conditionTest);
             testTree.InitializeTree();
+            conditionTest.Initialize(testTree);
             testTree.EvaluateHand(new GeneralHandData(hand));
 
             Assert.AreEqual(ExpectedTrigger, conditionTest.Triggered, 

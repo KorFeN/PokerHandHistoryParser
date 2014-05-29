@@ -1,6 +1,7 @@
 ﻿using HandHistories.Objects.Actions;
 using HandHistories.Objects.Hand;
 using HandHistories.Objects.Players;
+using HandHistories.Statistics.Core;
 using HandHistories.Statistics.HandData;
 using HandHistories.Statistics.Positions;
 using System;
@@ -14,18 +15,21 @@ namespace HandHistories.Statistics
     /// <summary>
     /// TODO: This class will contain player specific hand information that might be used by multiple conditions
     /// </summary>
-    public class PlayerHandData : BasicHandData
+    public partial class PlayerHandData : BasicHandData
     {
         public readonly string playerName;
         public readonly GeneralHandData handData;
         readonly Player Player;
 
-        public PlayerHandData(HandHistory hand, string PlayerName)
-            : base(hand)
+        public PlayerHandData(GeneralHandData hand, string PlayerName)
+            : base(hand.handHistory)
         {
+            handData = hand;
             playerName = PlayerName;
-            Player = hand.Players[PlayerName];
+            Player = hand.handHistory.Players[PlayerName];
         }
+
+        internal Dictionary<CounterGroup, CounterValueCollection> cachedValueCollections = new Dictionary<CounterGroup, CounterValueCollection>();
 
         List<HandAction> playerActions;
         public List<HandAction> PlayerActions
@@ -38,7 +42,7 @@ namespace HandHistories.Statistics
                 }
                 return playerActions;
             }
-        }
+        } 
 
         public PreFlopPosition Position
         {
@@ -46,6 +50,11 @@ namespace HandHistories.Statistics
             {
                 return PFPosition.GetPosition(handData.handHistory, playerName);
             }
+        }
+
+        public override string ToString()
+        {
+            return playerName;
         }
     }
 }

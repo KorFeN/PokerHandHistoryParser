@@ -80,14 +80,20 @@ namespace HandHistories.Parser.WindowsTestApp
 
             StatisticsEvaluator statEval = new StatisticsEvaluator();
 
-            IStatistic VPIP = BasicHandStatistic.VPIP;
-            IStatistic PFR = BasicHandStatistic.PFR;
-            IStatistic _3Bet = BasicHandStatistic.ThreeBet;
+            IStatistic VPIP = PreFlopStatistics.VPIP;
+            IStatistic PFR = PreFlopStatistics.PFR;
+            IStatistic _3Bet = PreFlopStatistics.ThreeBet;
+            IStatistic RFI = PreFlopStatistics.RFI;
+            IStatistic Flop_Bet = FlopStatistics.Bet;
 
             statEval.AddStatistic(BasicCounterStatistic.Hands);
             statEval.AddStatistic(VPIP);
             statEval.AddStatistic(PFR);
             statEval.AddStatistic(_3Bet);
+            statEval.AddStatistic(RFI);
+            statEval.AddStatistic(Flop_Bet);
+            statEval.AddStatistic(FlopStatistics.CBet);
+            statEval.AddStatistic(FlopStatistics.FoldVsCBet);
             statEval.Initialize();
 
             IHandHistoryParserFactory factory = new HandHistoryParserFactoryImpl();
@@ -114,13 +120,18 @@ namespace HandHistories.Parser.WindowsTestApp
                 });
 
                 decimal handsPlayed = Math.Round(BasicCounterStatistic.Hands.GetValue(counters));
-                decimal vpipProc = Math.Round(VPIP.GetValue(counters) * 100, 1);//Math.Round(VPIP.Value * 100, 1);
-                decimal pfrProc = Math.Round(PFR.GetValue(counters) * 100, 1);
-                //decimal threeBetProc = Math.Round(_3Bet.Value * 100, 1);
-                string StatisticString = string.Format("{0}/{1}/{2}", vpipProc, pfrProc, "");
+                decimal vpipProc = Math.Round(VPIP.GetValue(counters) * 100, 1);
+                decimal pfrProc = Math.Round(RFI.GetValue(counters) * 100, 1);
+                decimal threeBetProc = Math.Round(_3Bet.GetValue(counters) * 100, 2);
+                string StatisticString = string.Format("{0}/{1}/{2}", vpipProc, pfrProc, threeBetProc);
+
+                decimal flopBetProc = Math.Round(Flop_Bet.GetValue(counters) * 100, 2);
+                decimal flopCBetProc = Math.Round(FlopStatistics.CBet.GetValue(counters) * 100, 2);
+                decimal foldVsCBet = Math.Round(FlopStatistics.FoldVsCBet.GetValue(counters) * 100, 2);
+                string FlopStatString = string.Format("\r\nFlop: B:{0} CB:{1} FvCB:{2}", flopBetProc, flopCBetProc, foldVsCBet);
                 duration.Stop();
 
-                MessageBox.Show(this, string.Format("Player {0} played {1} of {2} hands.\r\n{3}\r\nin {4}ms", new object[]{textBox_PlayerName.Text, handsPlayed, hands.Count, StatisticString, duration.ElapsedMilliseconds}));
+                MessageBox.Show(this, string.Format("Player {0} played {1} of {2} hands.\r\n{3}\r\nin {4}ms", new object[]{textBox_PlayerName.Text, handsPlayed, hands.Count, StatisticString + FlopStatString, duration.ElapsedMilliseconds}));
             }
             catch (Exception ex)
             {

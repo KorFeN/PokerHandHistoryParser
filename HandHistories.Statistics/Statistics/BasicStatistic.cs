@@ -4,35 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using HandHistories.Statistics.Conditions.PreFlop;
 
 namespace HandHistories.Statistics.Statistics
 {
     public class BasicHandStatistic : IStatistic
     {
-        public static BasicHandStatistic VPIP
-        {
-            get
-            {
-                return new BasicHandStatistic(typeof(VPIPOppertunityCondition), typeof(VPIPInstanceCondition), "VPIP");
-            }
-        }
-
-        public static BasicHandStatistic PFR
-        {
-            get
-            {
-                return new BasicHandStatistic(typeof(VPIPOppertunityCondition), typeof(PreflopRaiseCondition), "PFR");
-            }
-        }
-
-        public static BasicHandStatistic ThreeBet
-        {
-            get
-            {
-                return new BasicHandStatistic(typeof(ThreeBetOppertunityCondition), typeof(ThreeBetInstanceCondition), "3Bet");
-            }
-        }
-
         public string Name
         {
             get;
@@ -53,6 +30,10 @@ namespace HandHistories.Statistics.Statistics
         {
             int INST = counters[_instanceCondition];
             int OPP = counters[_oppertunityCondition];
+            if (OPP == 0)
+            {
+                return 0;
+            }
             return (decimal)INST / (decimal)OPP;
         }
 

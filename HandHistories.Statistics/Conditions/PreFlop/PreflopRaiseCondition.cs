@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace HandHistories.Statistics.Conditions
+namespace HandHistories.Statistics.Conditions.PreFlop
 {
     public class PreflopRaiseCondition : IStatisticCondition
     {

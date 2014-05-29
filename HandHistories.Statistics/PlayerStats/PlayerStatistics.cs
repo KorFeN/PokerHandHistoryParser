@@ -41,11 +41,13 @@ namespace HandHistories.Statistics.PlayerStats
         {
             get
             {
-                if (!counters.ContainsKey(key))
+                CounterValueCollection values;
+                if (!counters.TryGetValue(key, out values))
                 {
-                    counters.Add(key, new CounterValueCollection(counterGroup));
+                    values = new CounterValueCollection(counterGroup);
+                    counters.Add(key, values);
                 }
-                return counters[key];
+                return values;
             }
         }
 

@@ -169,7 +169,21 @@ namespace HandHistories.Objects.Actions
                        HandActionType == HandActionType.POSTS;
             }
         }
-       
-        
+
+        /// <summary>
+        /// This true if the player performs either a FOLD/CHECK/BET/CALL/RAISE/ALLIN
+        /// </summary>
+        public bool IsBettingRoundAction
+        {
+            get
+            {
+                return HandActionType == HandActionType.FOLD ||
+                       HandActionType == HandActionType.BET ||
+                       HandActionType == HandActionType.CHECK ||
+                       HandActionType == HandActionType.CALL ||
+                       HandActionType == HandActionType.RAISE ||
+                       HandActionType == HandActionType.ALL_IN;
+            }
+        }
     }
 }

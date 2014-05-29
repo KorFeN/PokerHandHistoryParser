@@ -6,17 +6,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace HandHistories.Statistics.Conditions
+namespace HandHistories.Statistics.Conditions.PreFlop
 {
     public class VPIPOppertunityCondition : IStatisticCondition
     {
         public void EvaluateHand(GeneralHandData generalHand, PlayerHandData hand, HandAction action)
         {
             HandAction OppertunityAction = hand.PlayerActions.Street(Street.Preflop)
-                .FirstOrDefault(p => p.HandActionType == HandActionType.CALL ||
-                p.HandActionType == HandActionType.FOLD ||
-                p.HandActionType == HandActionType.RAISE ||
-                p.HandActionType == HandActionType.ALL_IN);
+                .FirstOrDefault(p => p.IsBettingRoundAction);
             if (OppertunityAction != null)
             {
                 if (ConditionTrigger != null)

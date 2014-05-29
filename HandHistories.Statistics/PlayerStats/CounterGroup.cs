@@ -7,21 +7,27 @@ using System.Text;
 
 namespace HandHistories.Statistics.Core
 {
+    public delegate void CountTrigger(PrimaryKey key, PlayerHandData player, int CounterID); 
+
     public sealed class Counter
     {
         /// <summary>
         /// The counter group of which this counter is a member
         /// </summary>
         readonly CounterGroup coupledGroup;
+
         /// <summary>
         /// Index where this counter is located in the CounterGroup
         /// </summary>
         public int ID { get; private set; }
         public string Name { get; private set; }
-        public Type Condition { get; private set; }
-        
 
-        internal Counter(CounterGroup group, int pID, Type condition)
+        /// <summary>
+        /// The Condition this Counter is mapped to.
+        /// </summary>
+        public Type Condition { get; private set; }
+
+        internal Counter(CounterGroup group, int counterID, Type condition)
         {
             Type typeCheck = condition.GetInterface("IStatisticCondition");
             if (typeCheck == null)
@@ -29,7 +35,7 @@ namespace HandHistories.Statistics.Core
                 throw new Exception("Not a statistic");
             }
             Condition = condition;
-            ID = pID;
+            ID = counterID;
             coupledGroup = group;
             Name = condition.FullName;
         }
@@ -41,10 +47,10 @@ namespace HandHistories.Statistics.Core
 
         private void CountTrigger(GeneralHandData generalHand, PlayerHandData hand, HandAction action)
         {
-            Count(hand.playerName, generalHand.Key, ID);
+            Count(generalHand.Key, hand, ID);
         }
 
-        public event Action<string, PrimaryKey, int> Count;
+        public event CountTrigger Count;
 
         public override string ToString()
         {
@@ -53,13 +59,16 @@ namespace HandHistories.Statistics.Core
     }
 
     /// <summary>
-    /// This class maps indexes in the to counters
+    /// This class maps indexes in the CounterValueCollection to Counters
     /// </summary>
     public sealed class CounterGroup
     {
         int _currentIndex = 0;
         List<Counter> _counters = new List<Counter>();
 
+        /// <summary>
+        /// This class maps indexes in the CounterValueCollection to Counters
+        /// </summary>
         internal CounterGroup()
         {
         }

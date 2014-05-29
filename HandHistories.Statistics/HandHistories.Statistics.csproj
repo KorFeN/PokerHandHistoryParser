@@ -40,16 +40,39 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Conditions\Flop\FlopBet.cs" />
+    <Compile Include="Conditions\Flop\FlopContinuationBet.cs" />
+    <Compile Include="Conditions\Flop\FlopFold.cs" />
+    <Compile Include="Conditions\Flop\FlopFoldVsCBet.cs" />
+    <Compile Include="Conditions\PreFlop\RaiseFirstInCondition.cs" />
+    <Compile Include="Conditions\River\RiverBet.cs" />
+    <Compile Include="Conditions\River\RiverContinuationBet.cs" />
+    <Compile Include="Conditions\River\RiverFold.cs" />
+    <Compile Include="Conditions\River\RiverFoldVsCBet.cs" />
+    <Compile Include="Conditions\StreetBaseConditions\Bet.cs" />
+    <Compile Include="Conditions\StreetBaseConditions\BetFold.cs" />
+    <Compile Include="Conditions\StreetBaseConditions\ContinuationBet.cs" />
+    <Compile Include="Conditions\StreetBaseConditions\Fold.cs" />
+    <Compile Include="Conditions\StreetBaseConditions\FoldVsCBet.cs" />
     <Compile Include="Conditions\StreetConditions\FlopCondition.cs" />
+    <Compile Include="Conditions\StreetConditions\RiverCondition.cs" />
+    <Compile Include="Conditions\StreetConditions\TurnCondition.cs" />
+    <Compile Include="Conditions\Turn\TurnBet.cs" />
+    <Compile Include="Conditions\Turn\TurnContinuationBet.cs" />
+    <Compile Include="Conditions\Turn\TurnFold.cs" />
+    <Compile Include="Conditions\Turn\TurnFoldVsCBet.cs" />
     <Compile Include="Core\ConditionTree.cs" />
+    <Compile Include="Extensions\ExtensionMethods.GetAgressor.cs" />
+    <Compile Include="HandData\GeneralHandData\GeneralHandData.StreetActions.cs" />
+    <Compile Include="HandData\PlayerHandData\PlayerHandData.StreetActions.cs" />
     <Compile Include="PlayerStats\CounterGroup.cs" />
     <Compile Include="Core\StatCounter.cs" />
     <Compile Include="PlayerStats\PlayerGroup.cs" />
     <Compile Include="PlayerStats\PlayerStatistics.cs" />
-    <Compile Include="HandData\GeneralHandData.cs" />
+    <Compile Include="HandData\GeneralHandData\GeneralHandData.cs" />
     <Compile Include="HandData\CustomHandData.cs" />
     <Compile Include="HandData\HandData.cs" />
-    <Compile Include="HandData\PlayerHandData.cs" />
+    <Compile Include="HandData\PlayerHandData\PlayerHandData.cs" />
     <Compile Include="Interfaces\IStatisticCondition.cs" />
     <Compile Include="PlayerStats\PrimaryKey.cs" />
     <Compile Include="Positions\Position.cs" />
@@ -63,6 +86,8 @@
     <Compile Include="Statistics\BasicCounter.cs" />
     <Compile Include="Statistics\BasicStatistic.cs" />
     <Compile Include="Interfaces\IStatistic.cs" />
+    <Compile Include="Statistics\FlopStatistics.cs" />
+    <Compile Include="Statistics\PreFlopStatistics.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\HandHistories.Objects\HandHistories.Objects.csproj">
@@ -76,6 +101,7 @@
   <ItemGroup>
     <Content Include="Positions\Positions.txt" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

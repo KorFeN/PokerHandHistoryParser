@@ -44,6 +44,7 @@
   <ItemGroup>
     <Compile Include="ConditionTests\ConditionTestBase.cs" />
     <Compile Include="ConditionTests\PreFlop\PFRInstanceTestTest.cs" />
+    <Compile Include="ConditionTests\PreFlop\RFIOppertunityTest.cs" />
     <Compile Include="ConditionTests\PreFlop\VPIPOppertunityTest.cs" />
     <Compile Include="ConditionTests\PreFlop\VPIPInstanceTest.cs" />
     <Compile Include="ConditionTests\PreFlop\_3BetInstanceTest.cs" />

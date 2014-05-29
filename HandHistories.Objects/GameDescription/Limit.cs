@@ -227,7 +227,7 @@ namespace HandHistories.Objects.GameDescription
 
         public override int GetHashCode()
         {
-            return ToString().GetHashCode();
+            return BigBlind.GetHashCode();
         }
     }
 }

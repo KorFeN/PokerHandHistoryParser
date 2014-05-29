@@ -10,15 +10,20 @@ namespace HandHistories.Statistics
 { 
     public class StatisticsEvaluator
     {
-        ConditionTree conditionTree = new ConditionTree();
-
-        readonly CounterGroup statsGroup = new CounterGroup();
+        readonly ConditionTree conditionTree = new ConditionTree();
+        readonly CounterGroup counterGroup = new CounterGroup();
 
         PlayerStatisticsCollection players;
 
-        void IncrementCounter(string PlayerName, PrimaryKey key, int CounterID)
+        void IncrementCounter(PrimaryKey key, PlayerHandData player, int CounterID)
         {
-            players[PlayerName][key].IncrementCounter(CounterID);
+            CounterValueCollection counters;
+            if (!player.cachedValueCollections.TryGetValue(counterGroup, out counters))
+            {
+                counters = players[player.playerName][key];
+                player.cachedValueCollections.Add(counterGroup, counters);
+            }
+            counters.IncrementCounter(CounterID);
         }
 
         public void AddStatistic(IStatistic stat)
@@ -32,7 +37,7 @@ namespace HandHistories.Statistics
         public void AddCondition(Type condition)
         {
 		    conditionTree.AddCondition(condition);
-            Counter newCounter = statsGroup.CreateCounter(condition);
+            Counter newCounter = counterGroup.CreateCounter(condition);
             if (newCounter != null)
             {
                 newCounter.Count += IncrementCounter;
@@ -42,8 +47,8 @@ namespace HandHistories.Statistics
         public void Initialize()
         {
             conditionTree.InitializeTree();
-            statsGroup.Initialize(conditionTree);
-            players = new PlayerStatisticsCollection(this, statsGroup);
+            counterGroup.Initialize(conditionTree);
+            players = new PlayerStatisticsCollection(this, counterGroup);
         }
 
         public void EvaluateHand(GeneralHandData hand)
@@ -54,7 +59,7 @@ namespace HandHistories.Statistics
         public CounterValueCollection GetPlayerCounters(string PlayerName, KeyFilter filter)
         {
             var filteredCounters = players[PlayerName].counters.Where(p => filter.Check(p.Key));
-            CounterValueCollection result = new CounterValueCollection(statsGroup);
+            CounterValueCollection result = new CounterValueCollection(counterGroup);
             foreach (var counter in filteredCounters)
             {
                 result += counter.Value;

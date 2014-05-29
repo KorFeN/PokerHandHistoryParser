@@ -1,13 +1,9 @@
 ﻿using HandHistories.Objects.Actions;
 using HandHistories.Objects.Cards;
 using HandHistories.Objects.Hand;
-using HandHistories.Statistics.Conditions;
+using HandHistories.Statistics.Conditions.PreFlop;
 using NUnit.Framework;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HandHistories.Statistics.UnitTests.ConditionTests.PreFlop
 {
@@ -18,7 +14,7 @@ namespace HandHistories.Statistics.UnitTests.ConditionTests.PreFlop
     public class _3BetOppertunityTest : ConditionTest
     {
         public _3BetOppertunityTest()
-            : base(new ThreeBetOppertunityCondition())
+            : base(typeof(ThreeBetOppertunityCondition))
         {
         }
 

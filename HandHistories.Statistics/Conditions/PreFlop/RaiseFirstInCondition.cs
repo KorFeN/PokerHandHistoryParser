@@ -1,5 +1,4 @@
 ﻿using HandHistories.Objects.Actions;
-using HandHistories.Objects.Cards;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,15 +6,15 @@ using System.Text;
 
 namespace HandHistories.Statistics.Conditions.PreFlop
 {
-    public class ThreeBetInstanceCondition : IStatisticCondition
+    public class RaiseFirstInInstanceCondition : IStatisticCondition
     {
-        public void EvaluateHand(GeneralHandData generalHand, PlayerHandData hand, HandAction action)
+        public void EvaluateHand(GeneralHandData generalHand, PlayerHandData hand, HandAction OppertunityAction)
         {
-            if (action.IsRaise)
+            if (OppertunityAction.IsRaise)
             {
                 if (ConditionTrigger != null)
                 {
-                    ConditionTrigger(generalHand, hand, null); 
+                    ConditionTrigger(generalHand, hand, OppertunityAction);
                 }
             }
         }
@@ -24,25 +23,26 @@ namespace HandHistories.Statistics.Conditions.PreFlop
 
         public IEnumerable<Type> PrequisiteConditions
         {
-            get { return new Type[] { typeof(ThreeBetOppertunityCondition) }; }
+            get { return new Type[] { typeof(RaiseFirstInOppertunityCondition) }; }
         }
     }
 
-    public class ThreeBetOppertunityCondition : IStatisticCondition
+    public class RaiseFirstInOppertunityCondition : IStatisticCondition
     {
-        public void EvaluateHand(GeneralHandData generalHand, PlayerHandData hand, HandAction RFIAction)
+        public void EvaluateHand(GeneralHandData generalHand, PlayerHandData hand, HandAction EmptyAction)
         {
-            for (int i = RFIAction.ActionNumber + 1; i < generalHand.PreFlopActions.Count; i++)
+            for (int i = 0; i < generalHand.PreFlopActions.Count; i++)
             {
                 HandAction action = generalHand.PreFlopActions[i];
                 if (action.IsBettingRoundAction)
                 {
-                    if (ConditionTrigger != null)
+                    if (action.PlayerName == hand.playerName &&
+                        ConditionTrigger != null)
                     {
                         ConditionTrigger(generalHand, generalHand.PlayerList[action.PlayerName], action);
                     }
                 }
-                
+
                 if (action.IsRaise)
                 {
                     break;
@@ -54,7 +54,7 @@ namespace HandHistories.Statistics.Conditions.PreFlop
 
         public IEnumerable<Type> PrequisiteConditions
         {
-            get { return new Type[] { typeof(RaiseFirstInInstanceCondition) }; }
+            get { return new Type[] { typeof(PlayerHandCondition) }; }
         }
     }
 }
