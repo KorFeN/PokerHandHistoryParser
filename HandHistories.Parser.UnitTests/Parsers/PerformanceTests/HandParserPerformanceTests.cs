@@ -5,7 +5,6 @@ using System;
 
 namespace HandHistories.Parser.UnitTests.Parsers.PerformanceTest
 {
-    [TestFixture("PartyPoker")]
     [TestFixture("PokerStars")]
     [TestFixture("OnGame")]
     [TestFixture("IPoker")]
@@ -15,6 +14,7 @@ namespace HandHistories.Parser.UnitTests.Parsers.PerformanceTest
     [TestFixture("FullTilt")]
     [TestFixture("MicroGaming")]
     [TestFixture("Winamax")]
+    [TestFixture("BossMedia")]
     internal class HandParserPerformanceTest : HandHistoryParserBaseTests
     {
         public HandParserPerformanceTest(string site)
