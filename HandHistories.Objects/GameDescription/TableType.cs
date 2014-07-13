@@ -33,7 +33,7 @@ namespace HandHistories.Objects.GameDescription
         #endregion
 
         [DataMember]
-        private readonly TableTypeDescription _tableTypeDescriptions;
+        public readonly TableTypeDescription _tableTypeDescriptions;
 
         public TableType(params TableTypeDescription[] tableTypeDescriptions)
         {

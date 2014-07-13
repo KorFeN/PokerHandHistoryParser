@@ -49,6 +49,10 @@ namespace HandHistories.Statistics.PlayerStats
                 }
                 return values;
             }
+            set
+            {
+                counters[key] = value;
+            }
         }
 
         public IEnumerator<KeyValuePair<PrimaryKey, CounterValueCollection>> GetEnumerator()

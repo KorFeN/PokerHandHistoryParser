@@ -128,15 +128,16 @@ namespace HandHistories.Statistics.Core
         readonly CounterGroup _coupledCounters;
         int[] _values;
 
-        internal CounterValueCollection(CounterGroup statistics)
+        public CounterValueCollection(CounterGroup statistics)
         {
             _values = new int[statistics.Count];
             _coupledCounters = statistics;
         }
 
-        internal CounterValueCollection(CounterGroup statistics, int[] Values)
+        public CounterValueCollection(CounterGroup statistics, int[] Values)
             :this(statistics)
         {
+            _values = Values;
         }
 
         public int this[Type condition]
@@ -150,6 +151,11 @@ namespace HandHistories.Statistics.Core
         public void IncrementCounter(int counterID)
         {
             _values[counterID]++;
+        }
+
+        public int[] GetValues()
+        {
+            return _values.ToArray();
         }
 
         public static CounterValueCollection operator +(CounterValueCollection op1, CounterValueCollection op2)

@@ -25,22 +25,34 @@ namespace HandHistories.Statistics.PlayerStats
 
         public int NumPlayersActive { get; private set; }
 
-        private PrimaryKey()
+        public PrimaryKey(PokerFormat pokerFormat,
+            SiteName site,
+            GameType gameType,
+            Limit limit,
+            SeatType seatType,
+            TableType tableType,
+            int numPlayersActive)
         {
+            PokerFormat = pokerFormat;
+            Site = site;
+            GameType = gameType;
+            Limit = limit;
+            SeatType = seatType;
+            TableType = tableType;
+            NumPlayersActive = numPlayersActive;
         }
 
         public static PrimaryKey CreateFromHand(HandHistory source)
         {
-            return new PrimaryKey()
-                {
-                    PokerFormat = source.GameDescription.PokerFormat,
-                    Site = source.GameDescription.Site,
-                    GameType = source.GameDescription.GameType,
-                    Limit = source.GameDescription.Limit,
-                    SeatType = source.GameDescription.SeatType,
-                    TableType = source.GameDescription.TableType,
-                    NumPlayersActive = source.NumPlayersActive
-                };
+            return new PrimaryKey(
+                    source.GameDescription.PokerFormat,
+                    source.GameDescription.Site,
+                    source.GameDescription.GameType,
+                    source.GameDescription.Limit,
+                    source.GameDescription.SeatType,
+                    source.GameDescription.TableType,
+                    source.NumPlayersActive
+                );
         }
 
         public override bool Equals(object obj)
